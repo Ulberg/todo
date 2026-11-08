@@ -1,0 +1,46 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:06:06Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The GitHub side is done and checked, and the first Phase 0 tooling is pushed with CI green in both repos.
+
+GitHub Apps, verified end to end. For each app I signed a short-lived token with its key, without printing it, and asked GitHub who it is:
+
+| App | ID | Key belongs to | Installed on |
+|---|---|---|---|
+| ulberg-platform-admin | 5672546 | this app | todo, platform |
+| ulberg-platform-reader | 5672559 | this app | todo, platform |
+| ulberg-platform-pr-bot | 5672567 | this app | platform only |
+
+The IDs are set as variables in the same places as their keys.
+
+Pushed to both repos:
+- CI:
+  - gitleaks scans the full history. It downloads a pinned version and verifies its checksum, and found no leaks.
+  - A check that every .prompts/ file follows the format in AGENTS.md.
+  - Tests for the prompt-log hook.
+  - In platform, a check of access/people.yaml.
+- Dependabot for the GitHub Actions versions we use.
+- Automatic prompt logging through Claude Code hooks (.claude/hooks/prompt_log.py). It stores only your prompt and the final reply text, never thinking, tool calls or tool output. It redacts known secret formats, including 1Password links, and is covered by 4 tests. These are Claude Code hooks, not git hooks.
+- access/people.yaml in platform: you're the only person, in both groups, and lead of both repos.
+
+Two things to know:
+
+1. The hooks start working in your next Claude Code session in each repo. Claude Code may ask you to approve the project hooks (check with /hooks). Until then I keep writing .prompts/ by hand in this session.
+2. There's a gap in the plan, and I need your decision. GitHub never lets anyone approve their own pull request. Since you're the only lead, a rule that requires a code-owner review would block every PR you open, including the ones I open, because I push as your account. I recommend:
+   - Give Claude its own GitHub identity: a fourth GitHub App, ulberg-claude, with only contents and pull-request access. Claude opens PRs as that app.
+   - You review and approve them as the code owner.
+   - That's also the AI-first story: the agent proposes, and a human lead approves.
+   Until branch rules exist, I'm pushing straight to main. That's only acceptable for this bootstrap stage.
+
+What happens next:
+
+Things I can do now:
+- The bootstrap script. It sets up the Pulumi state storage, encryption of Pulumi's secrets, the CI identities trusted only from the dev environment and from pull requests, and the provider registrations.
+- The Pulumi F# bootstrap stack. It turns people.yaml into groups, PIM, Conditional Access, branch rules and CODEOWNERS.
+
+What I need from you:
+- Finish Part A: Owner on the subscription for the admin account, and the External ID tenant.
+- Send me the IDs: workforce tenant, subscription, External ID tenant and domain, and the admin's object ID.
+- Your answer on the ulberg-claude bot.
