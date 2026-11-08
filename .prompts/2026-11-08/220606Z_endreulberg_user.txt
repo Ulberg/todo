@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T22:06:06Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+admin : App ID: 5672546 Pr bot: App ID: 5672567 Reader: App ID: 5672559

@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T22:03:04Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I have 1pwd links like "[REDACTED: 1Password item link]" for the SSH key of each application, can i prvoide those and the app-ids to you?

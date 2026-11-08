@@ -3,3 +3,4 @@
 /reference-infra/
 
 .DS_Store
+.prompts/.state/

@@ -1,0 +1,22 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:04:09Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The three keys are stored as GitHub secrets. None of them was printed.
+
+Checks:
+- All three 1Password items are SSH-key items, but the private key field holds the original "BEGIN RSA PRIVATE KEY" PEM, which is the format GitHub expects. openssl rsa -check reported "RSA key ok" for each.
+- They're stored where we planned. gh secret list shows the names:
+
+| Secret | Where |
+|---|---|
+| PLATFORM_ADMIN_APP_KEY | Ulberg/platform, environment dev (approved runs only) |
+| PLATFORM_READER_APP_KEY | Ulberg/platform, whole repo |
+| PR_BOT_APP_KEY | Ulberg/todo, environment release (main only) |
+
+Still missing: the three app IDs. I tried to look them up through the GitHub API, but it returns 404 because the apps are private to your account. You'll find each one on the app's settings page under General → About → "App ID", a number like 1234567. Send me the three numbers and I'll set them as variables.
+
+Once I have the IDs, I'll check that each key really belongs to its app. I'll sign a short-lived token with the key, without printing it, and ask GitHub which app it identifies as.
+
+Also check that you've installed the apps on the repos: admin and reader on both, pr-bot on platform only.
