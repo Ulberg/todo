@@ -1,0 +1,42 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:54:47Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Mostly, yes. I've treated your message as the go-ahead for Phase 0 and started:
+
+- Created and pushed github.com/Ulberg/todo and github.com/Ulberg/platform, both public. The reference folders are git-ignored and weren't pushed.
+- Turned on secret scanning, push protection and Dependabot alerts on both repos.
+- Created the environments the app keys go into:
+  - dev in the platform repo: you're the required reviewer, and only the main branch can deploy.
+  - release in the todo repo: only the main branch can deploy.
+
+Pulumi will take over all of these settings later.
+
+A few things still need you, because they involve private keys or your own logins.
+
+1. Install the apps. On each app's page, choose Install App → Only select repositories:
+   - ulberg-platform-admin on todo and platform
+   - ulberg-platform-reader on todo and platform
+   - ulberg-platform-pr-bot on platform only
+2. Store the keys yourself, in your own terminal, so the private keys never pass through my session:
+
+   gh variable set PLATFORM_ADMIN_APP_ID  --repo Ulberg/platform --env dev --body <app-id>
+   gh secret   set PLATFORM_ADMIN_APP_KEY --repo Ulberg/platform --env dev < ~/Downloads/<admin>.pem
+   gh variable set PLATFORM_READER_APP_ID  --repo Ulberg/platform --body <app-id>
+   gh secret   set PLATFORM_READER_APP_KEY --repo Ulberg/platform < ~/Downloads/<reader>.pem
+   gh variable set PR_BOT_APP_ID  --repo Ulberg/todo --env release --body <app-id>
+   gh secret   set PR_BOT_APP_KEY --repo Ulberg/todo --env release < ~/Downloads/<pr-bot>.pem
+
+   Then delete the .pem files.
+3. Finish the Azure steps from Part A: give the admin account Owner on the subscription, then create the External ID tenant. Send me the four IDs: workforce tenant ID, subscription ID, External ID tenant ID and domain, and the admin's object ID.
+4. When the bootstrap script is ready: run az login as the admin, run the script, and click the admin-consent link it prints.
+
+Next, without needing anything from you, I'll build:
+- the CI checks for both repos (formatting, gitleaks, no git hooks);
+- the Claude Code hooks that capture .prompts/;
+- access/people.yaml;
+- the bootstrap script;
+- the first version of the Pulumi bootstrap stack.
+
+Phase 0 is done when CI can run pulumi preview against Azure, and that needs steps 2-4.
