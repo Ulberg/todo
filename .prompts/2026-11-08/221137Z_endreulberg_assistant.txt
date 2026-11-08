@@ -1,0 +1,15 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:11:37Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've added it to `PLAN.md`:
+
+- **D34, the bootstrap exception:** while you're the only person (infra dev, admin, app dev, and lead of both repos), commits go straight to `main` without a required review. GitHub doesn't allow approving your own PR, so this is temporary.
+- **The TODO in §13 (Future work)** removes that exception. Claude gets its own GitHub identity (a `ulberg-claude` app) and opens every PR as that app. You approve as code owner, and required reviews are switched on with no bypass for anyone. This has to be done before a `prod` environment exists or anyone else joins.
+
+That's committed and pushed.
+
+The prompt-log hooks started running in this session, sooner than I expected. Your message was logged automatically as `221137Z_endreulberg_user.txt`, so I've stopped writing the log by hand. This reply is written to `.prompts/` when the turn ends, and gets committed along with the next change.
+
+I'm still waiting on the rest of Part A: Owner on the subscription for the admin account, and the External ID tenant. Then send me the IDs: workforce tenant, subscription, External ID tenant and domain, and the admin's object ID. After that I'll write the bootstrap script and the Pulumi bootstrap stack.
