@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T22:11:37Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Sure, we in bootstrapping mode, but just add a TODO for later in the plan to actually setup a way to avoid this special case due to me being infra, admin and app developer as the solo dev

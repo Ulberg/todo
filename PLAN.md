@@ -127,6 +127,7 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D31 | Adopted reference-infra patterns (§12): nested read ⊂ write ⊂ admin groups, generated RBAC, environment-scoped OIDC, External Secrets Operator, cert-manager | msg 5 |
 | D32 | **No service mesh in v1**; add one when a trigger in §8 happens | msg 6 |
 | D33 | Infra devs reach the DB through a `db-access` proxy pod, not Teleport (§4.1) | msg 6 |
+| D34 | **Bootstrap exception:** while you are the only person (infra dev, admin, app dev and lead of both repos), commits go straight to `main` without required review. GitHub doesn't allow approving your own PR. This is temporary; see the TODO in §13 | msg 7 |
 
 ## 4. Sign-off and bootstrap
 
@@ -393,3 +394,8 @@ Tests: unit + property (domain), Testcontainers (storage), in-process API tests,
 - `prod` environment (a new Pulumi stack, same code).
 - Managed WAF, or Coraza in Envoy.
 - A2A Agent Card, if the app ever contains its own agent.
+- **TODO, solo-developer exception (D34).** Remove the bootstrap exception so every change to `main` gets a review, even with one person. Proposed approach:
+  - Claude gets its own GitHub identity (a `ulberg-claude` GitHub App with only contents + pull-request access) and opens every PR as that app.
+  - The human lead reviews and approves as code owner. Required reviews are switched on in the rulesets, with no bypass for anyone.
+  - Human-authored changes go through Claude-opened PRs as well, or wait for a second lead.
+  - This must be done before a `prod` environment exists, and before anyone else joins.
