@@ -1,0 +1,25 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T18:55:20Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I created four things and haven't built anything yet:
+
+- AGENTS.md: the .prompts/ rule and your infrastructure- and AI-first passage (spelling fixed, wording kept), plus a definition of done and a rule to follow PLAN.md.
+- CLAUDE.md: a single line, @AGENTS.md. Claude Code reads CLAUDE.md, not AGENTS.md, so this keeps one source of truth.
+- .prompts/2026-11-08/: this prompt and this reply. I picked one .txt file per message (.prompts/<date>/<HHMMSS>Z_<author>_<role>.txt). It is append-only and avoids merge conflicts when several people work at once.
+- PLAN.md (draft): target architecture, an agent-integration proposal for you to approve, 10 phases each with a "done when", and 19 open questions with my recommendation on each.
+
+Agent-integration proposal: use MCP (Model Context Protocol) as the way agents use the app, with Entra OAuth, and keep the OpenAPI spec as a second contract. The A2A protocol is for one agent handing work to another agent. Our app is a service that agents use, which is what MCP is for. The reference project already uses MCP. One change from the reference: REST handlers and MCP tools would both call the same use-case functions, instead of MCP calling the HTTP handlers through a fake HttpContext. Details are in PLAN.md section 4.
+
+Questions where the answer changes a lot:
+
+1. Who are the users (Q10)? Sharing with arbitrary emails points to Entra External ID (CIAM). A workforce tenant with guest invites is the alternative.
+2. One repo or two (Q6)? I recommend a separate platform repo for Pulumi and ArgoCD, so app developers can't touch infra or deployments.
+3. How does the browser hold tokens (Q11)? I recommend a SPA with MSAL and a bearer token in a header, which rules out CSRF by design. A cookie-based backend-for-frontend is the alternative.
+4. Budget, subscription, region, domain (Q1-4): one environment is roughly USD 250-450/month (unverified estimate).
+5. Your feature list says "delete todo" twice (Q14). Did you mean "get a todo" or "mark as done"?
+6. Can Claude read production data or only logs and metrics there (Q13)?
+7. HTTP QUERY (Q16): it's very new, so I'd test it end to end in Phase 1 and fall back to GET if anything in the chain doesn't support it.
+
+You can reply per question number, or "accept defaults except …". After that I'll update PLAN.md and record the answers in its decisions log. With your OK I'll also run git init with reference/ in .gitignore, since it has its own .git and company code.

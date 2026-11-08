@@ -1,0 +1,22 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T19:06:34Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Ok, MCP is fine, and the method you suggest is ok.
+
+1) I want anyone, regardless of access to org to use this app. It is semi public. 
+2) Yes, you seperate the platform into another repo, and if you want to make it reusable you make a platform.yaml format that is feed from the applicaiton repo to the platofrm to decide how the infra should behave without giving any access or control to the application devs. 
+3) SPA with MSAL, and yes bearer token in the header. 
+4) Whatever is cheapest! 
+5) No I just wrote it twice. 
+6) I want Claude to have read-only access to most things. But it is the Claude from the infra-developers. Meaning that applicaiton devs Claude should not be allowed to access anything except the logs and metrics. 
+7) Let us not use it then. 
+
+Also sharing should be based on permission-based access policies, meaning that you can define if you give the next user read, write, or share accesses, and those are all three seperate policies, but a share + read can only transmit a share + read not a share + write to the next person. 
+
+We need to find a good way to make local development efficient so we can test most of the code and things locally. Potentially also the infra if that is even feasible/possible. 
+
+Also it is important to mention that the infra developer group is the one with access to the infra and they should be defined somewhere so it is only their Entra users that can actually update the infra and use their claudes to update that stuff. Meaning that they have special priviliges.
+
+Lastly for tracing we can use something like Tempo. Also we might need to consider ValKey and/or KeyClock based on what needs arise.

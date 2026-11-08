@@ -1,0 +1,31 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:22:41Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Phases 9 and 10 had no "done when" line, so I added one to each. These are the phases to sign off, from PLAN.md section 10. Each one has to be green in CI, with nothing left broken, before the next starts.
+
+0. Ways of working + bootstrap: git init both repos, then create and push the public Ulberg/todo and Ulberg/platform repos. Tooling with all checks in CI (no git hooks), gitleaks, Dependabot, and the Claude Code hooks for .prompts/. The Azure bootstrap checklist and script for you. A Pulumi bootstrap stack covering people.yaml, the Entra groups, PIM, Conditional Access, GitHub rulesets and CODEOWNERS.
+   Done when both repos are protected by rules defined in code, and CI can run pulumi preview.
+1. Walking skeleton backend: F# Oxpecker with health and version endpoints, OpenTelemetry from the start, the local docker compose stack (Postgres, Grafana/Loki/Tempo/Prometheus, mock sign-in server), and app CI.
+   Done when CI is green and one request shows up locally as a trace, a log and a metric.
+2. Local platform: a kind cluster with Cilium, Envoy Gateway, ArgoCD and the Grafana stack, plus the platform.yaml renderer and automated network-policy tests.
+   Done when make up brings the full stack up locally and the app deploys through ArgoCD.
+3. Azure foundation, via Pulumi in F#, applied by CI only after approval: networking, ACR, Key Vault, AKS, private Postgres, Entra and External ID.
+   Done when access tests prove that app devs can change nothing, infra devs' Claude can read but not write, and the database can't be reached from outside.
+4. GitOps on Azure: ArgoCD, the platform.yaml pull-request flow, signed images, at least 2 replicas, autoscaling, default-deny networking, and the db-access proxy.
+   Done when an app merge reaches the cluster without any human touching the cluster.
+5. Observability on Azure: OTel Collector, Loki, Prometheus, Tempo and Grafana, with two Grafana orgs, separate tenants, infra signals, dashboards and alerts as code, and the Grafana MCP server.
+   Done when each group's Claude sees exactly what the access matrix allows, proven by tests.
+6. Edge + app security: TLS, security headers, strict CORS, rate limiting, External ID sign-in validation including verified email, permissions looked up by email, and DB migrations.
+   Done when the security test suite passes locally and against dev.
+7. Frontend shell: React with TanStack, shadcn and MSAL, a typed API client generated from the OpenAPI spec, and browser telemetry.
+   Done when login works and a "who am I" page shows one trace from browser to API to database.
+8. Agent shell (MCP): a stateless /mcp endpoint with scopes, audit logging and rate limits, a CI check that every REST endpoint has an MCP tool, and a first whoami tool.
+   Done when the feature template is documented in AGENTS.md.
+9. Todo features: create, list, get, edit and delete.
+   Done when each one works for a human through the frontend and for an agent through MCP, under the same permissions, with tests and a dashboard panel.
+10. Sharing: read, write and share bits, the admin role, pending grants, no user enumeration, and marking shared content as untrusted for agents.
+    Done when the no-escalation, no-enumeration and access-matrix tests pass, and sharing works the same from the frontend and from MCP.
+
+Reply "signed off" (or with changes) and I'll start Phase 0. The first outward-facing step is creating and pushing the two public GitHub repos.

@@ -1,0 +1,5 @@
+# Third-party reference material: never commit (see AGENTS.md)
+/reference/
+/reference-infra/
+
+.DS_Store

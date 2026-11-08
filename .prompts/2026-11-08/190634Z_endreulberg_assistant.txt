@@ -1,0 +1,29 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T19:06:34Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PLAN.md is updated to v2, with all your answers recorded in the decisions table (D3-D14). The main additions:
+
+- Two repos and platform.yaml (section 2): the app repo only declares what it needs. A GitHub App that can only open PRs proposes image-tag and platform.yaml changes to the platform repo. Tag-only bumps that pass policy auto-merge. Any platform.yaml change needs infra-dev approval. ArgoCD is the only thing that deploys.
+- Infra developers are defined as code in the platform repo (access/infra-developers.yaml → an Entra group managed by Pulumi). Changing who's in the group is itself a PR that needs infra-dev approval.
+- Access matrix (section 5): your Claude and every other agent use the developer's own Entra login, so group membership decides what each one can see. Grafana OSS has no per-data-source permissions, so the app-developer limit is enforced with two Grafana orgs plus separate Loki/Tempo tenants. App devs physically can't query infra logs.
+- Sharing (section 6): a user can grant a set Q only if they hold share and Q is a subset of what they hold. So {share, read} can never grant write. This is a property-tested domain rule, with Postgres row-level security as a second layer.
+- Cheapest setup (section 8): about USD 165-180/month, unverified. That's 2 small B-series nodes, burstable Postgres, Envoy Gateway instead of Application Gateway, and no managed WAF. Stopping the cluster and DB between demos cuts it further.
+- Local dev (section 10), three tiers:
+  1. docker compose with Postgres, the Grafana/Loki/Tempo/Prometheus stack and a mock OIDC server, for daily app work.
+  2. A kind cluster with the same ArgoCD, Cilium and Envoy setup as Azure, to test platform changes locally.
+  3. Cloud-only parts (Azure, Entra) checked with Pulumi mocks and pulumi preview in CI.
+- Valkey and Keycloak are deferred, each with a trigger for when to add it (section 7). The likely Keycloak trigger is MCP clients that need dynamic client registration, which Entra doesn't support.
+
+Remaining questions (section 4):
+
+1. Sharing details:
+   a. Does write require read?
+   b. Should grants a person made be revoked automatically when that person loses share?
+   c. Is delete owner-only?
+   d. Should a share to an email with no account wait until that person first signs in?
+2. Should app developers' Claude see app traces too, not just logs and metrics? I recommend yes, because traces are the best debugging signal and carry no PII.
+3. Should infra changes be applied only by platform CI after approval? That's my recommendation. The alternative is letting infra devs run pulumi up from their own machines.
+4. Please check the list of defaults in section 4.4. Most notably: Pulumi in TypeScript (the app stays F#), region swedencentral, no custom domain yet, and no Entra P2/PIM to keep costs down.
+5. Practical: do you have an Azure subscription and tenant where you're admin? Which GitHub owner should hold the two repos? Is ../platform OK as the local path for the platform repo?

@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T20:53:45Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+4) How do i setup the MFA for both my Owner and Admin accounts?

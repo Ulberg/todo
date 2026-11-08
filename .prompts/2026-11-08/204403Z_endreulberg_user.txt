@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T20:44:03Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+3) I cannot find the tenant in Entra. So i cannot rename it or find the ID / SubId?

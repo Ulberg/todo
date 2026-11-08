@@ -1,0 +1,27 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:44:03Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+This is common when you sign up with a personal Microsoft account. The Entra admin center often opens in a view that doesn't show the tenant Azure created. Use the Azure portal or the CLI instead.
+
+Option 1: Azure portal (portal.azure.com)
+
+1. Click your avatar in the top right, then "Switch directory". You should see a directory called "Default Directory". Switch to it if it isn't already selected.
+2. Search for "Microsoft Entra ID" in the top search bar and open it.
+   - Overview shows the Tenant ID and the primary domain (something.onmicrosoft.com).
+   - Properties → Name is where you rename it. Save.
+3. Search for "Subscriptions". The list shows the Subscription ID, and which directory each subscription belongs to.
+
+Once you've switched to "Default Directory" in the portal, entra.microsoft.com should show it too. If not, use the gear icon there (Settings → Directories + subscriptions) to switch.
+
+Option 2: CLI (most reliable). The Azure CLI isn't installed yet (step 1 of the list):
+
+brew install azure-cli
+az login
+az account show --query "{tenantId:tenantId, subscriptionId:id, subscription:name}" -o table
+az account tenant list -o table
+
+If "Subscriptions" is empty, or az login says there are no subscriptions, the signup didn't finish. That's usually card verification, or the upgrade to pay-as-you-go hasn't completed. In that case the tenant exists but the subscription doesn't. Finish the signup at portal.azure.com → Subscriptions → Add.
+
+If you run the CLI commands with ! in front here, I'll see the output and can check it with you. The IDs aren't secret.

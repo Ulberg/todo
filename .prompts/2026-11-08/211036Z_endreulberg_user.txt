@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T21:10:36Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+5) Where do i go to make the FIDO2 without logging in too each of them?

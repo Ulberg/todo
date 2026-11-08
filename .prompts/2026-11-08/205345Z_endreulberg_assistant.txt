@@ -1,0 +1,32 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:53:45Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The two accounts are set up in different places. The owner is a personal Microsoft account, managed by Microsoft. The admin is a user inside your tenant, managed by Entra.
+
+Use passkeys or FIDO2 keys, not just push notifications or SMS. Later, Pulumi turns on Conditional Access that requires phishing-resistant MFA for admin work. If a passkey isn't registered by then, you'd lock yourself out.
+
+A. Owner account (the personal Microsoft account you signed up with)
+
+1. Go to account.microsoft.com → Security → "Manage how I sign in" (Advanced security options).
+2. Add a sign-in method: a passkey (Face ID/Touch ID on your Mac or phone) and/or a security key. Add Microsoft Authenticator as a backup.
+3. Turn on two-step verification on the same page.
+4. Save the recovery code it gives you, offline. This account owns the billing, so losing it is the worst case.
+5. Optional, later: turn on "passwordless account" to remove the password entirely, once you've confirmed you can sign in with the passkey.
+
+B. Allow passkeys in the tenant (do this while signed in as the owner, who is Global Admin)
+
+6. In entra.microsoft.com (with "Default Directory" selected), go to Protection (or Entra ID) → Authentication methods → Policies.
+7. Open "Passkey (FIDO2)". Set it to enabled for all users, and save. Also check that "Microsoft Authenticator" is enabled. If passkeys aren't allowed here, the admin account can't register one in the next part.
+
+C. Admin account (endre@<tenant>.onmicrosoft.com)
+
+8. If you haven't already, create it: Entra ID → Users → New user → Create new user. Then open the user → Assigned roles → Add assignment → Global Administrator.
+9. Open a private browser window and sign in as the admin at mysignins.microsoft.com/security-info, using the temporary password, which you'll be asked to change. Security defaults will ask you to set up MFA right away.
+10. Add sign-in method → Passkey. You can store it in Microsoft Authenticator on your phone, or on a FIDO2 security key. Then also add Microsoft Authenticator (push) as a backup.
+11. Check it worked: sign out, sign in again as the admin, and you should be asked for the passkey. As the owner, you can also check under Entra ID → Users → the admin → Authentication methods.
+
+The emergency accounts (step 5 of the list) are registered the same way as part C, each with its own physical FIDO2 key.
+
+One thing to avoid: don't use the same passkey or phone as the only factor for both the owner and the admin. If you have a hardware key such as a YubiKey, register it on both accounts as a second factor. That way losing your phone doesn't lock you out of both.

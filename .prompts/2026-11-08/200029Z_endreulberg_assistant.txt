@@ -1,0 +1,32 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:00:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Pre-commit hooks are gone (D29). Every check runs in CI instead, and secret scanning stays as a CI check plus GitHub push protection and Dependabot. AGENTS.md now says "no git pre-commit hooks". The Claude Code hooks that write .prompts/ aren't git hooks, so they're unaffected.
+
+I went through reference-infra and recorded what we take from it in PLAN.md section 12. Adopted:
+
+- Nested groups. For each scope there are -read, -write and -admin groups, with admin inside write and write inside read. people.yaml generates them, and only read is standing; write and admin go through PIM.
+- Generated RBAC. Kubernetes permissions are produced by the platform.yaml renderer, the same way the old generator script did it, instead of being written by hand.
+- Approval-scoped CI login, tighter than the reference. The apply job runs in a GitHub Environment where platform leads are the required reviewers, and Azure only trusts tokens from that environment. A workflow without approval can't even get an Azure token. That enforces "apply only after approval" at the identity level, not just by convention.
+- One cloud identity per service, with permissions taken from what the service declares. This fits platform.yaml directly.
+- External Secrets Operator with Key Vault, and cert-manager.
+
+Not adopted:
+- The .fas/ Kustomize folders in app repos. They'd give app developers control over pod specs, which platform.yaml is meant to prevent.
+- Flux, Jenkins, Fluent Bit/Splunk.
+- Teleport, see question 2.
+
+Two new questions:
+
+1. Should we use a service mesh? I recommend Linkerd, the mesh from your old setup, so pod-to-pod traffic is encrypted with mTLS. Right now network policies limit who can talk to whom, but traffic inside the cluster is plaintext. The caveat is that free Linkerd builds are now "edge" releases.
+2. How do infra devs and their Claude reach the private database? The previous plan had a gap here: the database only accepts traffic from backend pods. Teleport would solve it, but Entra sign-in requires its paid Enterprise edition. I recommend a small db-access proxy pod instead:
+   - only infra developers may port-forward to it;
+   - Postgres still requires each person's own Entra token, mapped to the read-only role;
+   - the Kubernetes audit log records every port-forward.
+   It costs nothing extra.
+
+Security note: reference-infra contains SonarCloud tokens in README badge URLs, plus AWS account IDs. The repos will be public, so I added a .gitignore that excludes reference/ and reference-infra/. AGENTS.md now forbids committing them or quoting them in .prompts/. If those tokens are still valid, revoke them.
+
+After you answer these two questions and sign off on the phase order (section 10), I'll start Phase 0.

@@ -1,0 +1,54 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:24:35Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Sorry, I misread that. Here's the manual setup list. Part A you can do now, Part B comes after I've created the repos, and Part C after I've written the bootstrap script. Azure menu names move around, so treat the click paths as approximate.
+
+Part A: do now
+
+1. Install the local tools:
+   brew install azure-cli pulumi/tap/pulumi gh kind kubectl helm Azure/kubelogin/kubelogin
+   You also need the .NET 10 SDK and a Docker runtime, such as Docker Desktop or OrbStack.
+2. Create the Azure account at azure.microsoft.com (phone number and card required). This creates your workforce tenant ("Default Directory") and a subscription.
+   - Upgrade to pay-as-you-go straight away. You keep the free credit, and the trial limits on how much compute you can run would get in our way.
+3. In the Entra admin center (entra.microsoft.com), on the tenant overview:
+   - Rename the tenant, e.g. "Ulberg Platform".
+   - Note the Tenant ID, plus the Subscription ID from the Azure portal.
+4. Create a dedicated admin account in the tenant, e.g. endre@<tenant>.onmicrosoft.com.
+   - The personal Microsoft account you signed up with is linked to the tenant in a special way, and PIM, licenses and Conditional Access work better with a regular account in the tenant.
+   - Register a passkey or FIDO2 key as its MFA method, and give it Global Administrator. That assignment is temporary; Pulumi turns it into a PIM-eligible role later.
+   - From here on, use this account for all admin work.
+5. Create 2 emergency-access accounts, e.g. breakglass1@ and breakglass2@<tenant>.onmicrosoft.com.
+   - Each gets a long random password and its own FIDO2 key, plus a permanent Global Administrator assignment.
+   - Store them offline, not in your normal password manager. Pulumi will exclude them from Conditional Access and alert on any sign-in.
+6. Leave "security defaults" on for now. Pulumi turns them off only after the Conditional Access policies that replace them are in place.
+7. Buy 1 Entra ID P2 license and assign it to the admin account. You can buy it in the Microsoft 365 admin center (admin.microsoft.com) under Billing → Purchase services, or start with the 30-day P2 trial.
+8. Create a budget in Azure Cost Management → Budgets: USD 200/month, with email alerts at 50%, 80% and 100%.
+9. Create the External ID tenant for app users. In the Entra admin center: Manage tenants → Create → External configuration.
+   - Link it to your subscription, in a new resource group such as rg-identity, with data location Europe.
+   - Name it e.g. ulbergtodo, which gives ulbergtodo.ciamlogin.com.
+   - Note its Tenant ID.
+10. On GitHub, make sure the Ulberg account has 2FA on, ideally with a passkey.
+
+Part B: after I've created the repos
+
+11. Create 2 GitHub Apps under Ulberg → Settings → Developer settings → GitHub Apps. I'll give you the exact permission list:
+    - platform-admin: lets platform CI manage rulesets, CODEOWNERS and collaborators.
+    - platform-pr-bot: lets the todo repo's CI open PRs in the platform repo, and nothing else.
+    Install both on the two repos, and add each app's ID and private key as Actions secrets in the right repo or environment. This is the one place we can't avoid a stored secret: Azure accepts GitHub's CI login tokens without a stored secret, but GitHub's own API has no equivalent. The required approval step limits who can use them.
+
+Part C: after I've written the bootstrap script
+
+12. Run az login with the admin account, then run the bootstrap script. It will:
+    - register the Azure resource providers we need;
+    - create the Pulumi state storage (sign-in with Entra only, storage keys disabled) and a Key Vault key for encrypting Pulumi secrets;
+    - create the CI identities in both tenants, trusted only for logins from repo:Ulberg/platform:environment:dev (apply) and from pull requests (read-only preview).
+13. Grant admin consent for the CI identity's Microsoft Graph permissions. This is a one-click step in the portal, and the script prints the link. Pulumi needs these permissions to manage groups, app registrations, PIM and Conditional Access.
+
+    Be aware: this makes the CI identity very powerful in the workforce tenant. The safeguard is that only an approved run in the dev environment can log in as it.
+14. Send me the IDs: workforce Tenant ID, Subscription ID, External ID Tenant ID and domain, and the admin account's object ID (for people.yaml). These aren't secrets and can live in the public platform repo.
+
+Cost: apart from the P2 license (about USD 9/month, unverified) and a few cents of storage, nothing costs money until Phase 3 creates the cluster and the database.
+
+When Phase 0 starts, this list will go into the platform repo as a checklist document.

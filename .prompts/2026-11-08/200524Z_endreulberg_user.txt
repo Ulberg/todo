@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T20:05:24Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+1) We will implement it when pod-to-pod communication is a need. We have no known actions today that will be across pods.   2) That sounds like an OK compromise.  On the security, that surprises me! But yes good

@@ -1,0 +1,37 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T19:49:50Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PLAN.md is now v3. All your answers are recorded as decisions D15-D22, and RLS has moved to the future-work list. AGENTS.md also got a rule: an agent run by an app developer must not try to reach Azure, Kubernetes or the database.
+
+What changed:
+
+- Repo leads as code (section 2.2): one platform/access/people.yaml lists people, groups and the lead developers of each repo. Pulumi in F# turns it into:
+  - Entra groups;
+  - GitHub branch rules (PR required, code-owner review required, no force push);
+  - a generated CODEOWNERS file in each repo;
+  - collaborator permissions.
+  Only leads can approve merges, and only platform leads can change the file itself.
+- Pulumi language: F#. Pulumi has no official Rust SDK.
+- Database network (section 9.1): the database has no public endpoint at all. Two layers keep everything except the backend out:
+  - A network rule on the database subnet only allows the cluster's node subnet.
+  - Cilium policies only let backend pods reach the database IP. This layer is needed because pod traffic leaves with the node's IP, so the subnet rule alone can't tell backend pods from other pods.
+- Sharing follows Unix (section 6):
+  - read, write and share are independent bits, so write-only is allowed, like -w- on a file.
+  - Only the owner can delete, the same way you delete a file through its directory.
+  - admin:share_creator is like being the owner who can run chmod. It can't be granted through the API or MCP; giving it to someone else is a manual database change.
+  - Grants only ever add bits, and revoking someone doesn't revoke the grants they made.
+- No user enumeration (section 6.3): granting to any email returns the same response with the same timing. There's no user search, and share endpoints are rate-limited. Only verified emails can pick up pending shares, otherwise someone could sign up as another person's email and receive their shares.
+- Local tier 2 (section 11): I wrote down plainly what it can't reproduce: Azure networking, workload identity, and the managed Postgres specifics. Everything Kubernetes-level behaves the same as on Azure, so most work can be done locally first.
+
+Entra P2 / PIM (section 7 has the full explanation): PIM turns standing admin rights into "eligible" rights. You activate one for 1-4 hours, with MFA, a justification and optionally someone's approval, and every activation is logged. It needs Entra ID P2, roughly USD 9 per user per month (unverified). In this design humans and their Claude only ever hold read rights, and every write goes through an approved PR and CI. So PIM would only protect emergency access and the Entra admin roles. I recommend starting without it, using an emergency-access group that is empty by default plus offline emergency accounts, and adding P2 later.
+
+Remaining questions:
+
+1. Should we start without P2 / PIM?
+2. Database user security (options in section 9.2): I recommend Entra-only sign-in with three separate identities (migrator, app, read-only) and no passwords anywhere. It costs nothing extra.
+3. Should a write-only todo appear in the grantee's list as just its id and permissions, with no content?
+4. Should grantees be able to "leave", meaning drop their own access?
+5. Public or private repos? Ulberg is a personal GitHub account, so there are no teams. Enforced reviews on private repos also need GitHub Pro. I recommend public repos with secret scanning in CI.
+6. You have no Azure yet, so a few steps need you personally: create the account and subscription, turn on MFA and a budget alert, create the External ID tenant, and run one bootstrap script I'll write. Is that OK?

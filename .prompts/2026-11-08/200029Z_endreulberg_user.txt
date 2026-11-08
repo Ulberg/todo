@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T20:00:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I really hate pre-commit hooks. The other safety features are ok!   Aside from that, just to give you some reference to check against, i have made a reference-infra which contains somethings from my old work, if some of that simplifies anything you should consider using it

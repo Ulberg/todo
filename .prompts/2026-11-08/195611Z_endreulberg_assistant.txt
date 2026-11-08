@@ -1,0 +1,24 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T19:56:11Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PLAN.md is at v4. All your answers are recorded as decisions D23-D28, and there are no open design questions left.
+
+- P2 + PIM (section 7, rewritten as a design):
+  - Read access (Azure Reader, Kubernetes read, database read-only, Grafana) stays standing, behind MFA.
+  - Emergency write access is "eligible only", through a break-glass group. It can be activated for at most 2 hours, with MFA and a written justification, and every activation notifies all platform leads.
+  - Once there are 2 or more platform leads, another lead must approve. Entra doesn't allow approving your own request, so while you're the only lead it's MFA, justification and an alert.
+  - Entra admin roles (Global Admin and similar) have no permanent holders. They're eligible for 1 hour, with phishing-resistant MFA.
+  - Conditional Access replaces the free security defaults. It requires MFA for everyone, phishing-resistant MFA for Azure management, blocks legacy sign-in, and adds risk-based sign-in policies.
+  - All of it lives in Pulumi (F#), generated from access/people.yaml. The cost estimate is now about USD 175-190/month, with one P2 license (unverified).
+- Database: Entra-only sign-in with separate migrator, app and read-only identities, and no passwords anywhere.
+- A write-only grant shows up in the grantee's list as just its id and permissions. "Leave a share" is out of v1 and on the future-work list.
+- Public repos, with gitleaks secret scanning in CI and as a pre-commit hook, plus GitHub push protection.
+- Azure bootstrap (section 4) is now a 6-step checklist for you: account, budget alert, P2 license, 2 emergency accounts, External ID tenant, then the bootstrap script.
+
+Two things to check in Phase 3, both written into the plan:
+- How much PIM the External ID tenant supports. PIM and Conditional Access cover the tenant where you and other developers sign in, not the one app users sign up in.
+- Whether Pulumi can manage every PIM setting. Anything it can't manage gets a documented script that runs in CI.
+
+Last step before building: please confirm the phase order in section 10. Once you sign off, I'll start Phase 0: git init, creating the public Ulberg/todo and Ulberg/platform repos (the first outward-facing step), tooling, secret scanning, and the bootstrap checklist and script.

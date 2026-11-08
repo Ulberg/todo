@@ -1,0 +1,16 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:27:08Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Users created in the portal have no "usage location" by default. Microsoft won't assign a license without one, because which services are available depends on the country.
+
+How to fix it:
+
+1. Go to entra.microsoft.com → Entra ID → Users → Endre Ulberg (Admin) → Properties → Edit properties.
+2. Open the Settings tab, set Usage location to Norway (or the country you're in), and save.
+3. Assign the license again under the user → Licenses → Assignments → Add, or from admin.microsoft.com → Billing → Licenses.
+
+The emergency accounts don't need a license, so you don't have to change them.
+
+For later: Pulumi will set the usage location on everyone listed in people.yaml, and licenses will be assigned through the infra-developers group. Adding a new infra developer then won't hit this error.

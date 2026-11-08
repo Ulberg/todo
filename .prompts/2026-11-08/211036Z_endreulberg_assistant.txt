@@ -1,0 +1,29 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:10:36Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+There's no page in the portal for that. As an admin, Entra lets you add a phone, an email or a Temporary Access Pass to someone else's account, but not a passkey or FIDO2 key. A FIDO2 key has to be registered in a WebAuthn ceremony with the key physically present, so it's normally done from the user's own sign-in.
+
+You have two options.
+
+Recommended: sign in once per account, using a Temporary Access Pass (about 5 minutes each)
+
+1. As the admin, go to entra.microsoft.com → Protection → Authentication methods → Policies → Temporary Access Pass, and enable it.
+2. Go to Entra ID → Users → breakglass1 → Authentication methods → Add authentication method → Temporary Access Pass. Make it one-time use, valid for 1 hour, and copy the code.
+3. In a private window, open mysignins.microsoft.com/security-info, sign in as breakglass1 with the pass, then Add sign-in method → Passkey → Security key. Insert and touch the key.
+4. Repeat for breakglass2 with its own key.
+
+You'd have to sign in anyway. Microsoft recommends testing each emergency account by actually signing in with it, and you want to know it works before you lock it in a drawer.
+
+Without signing in as them: the Microsoft Graph API
+
+Entra has an API for registering a passkey on behalf of another user. Admins use it to hand out pre-registered keys. The PowerShell module DSInternals.Passkeys wraps it:
+
+Install-Module DSInternals.Passkeys
+Connect-Graph -Scopes UserAuthenticationMethod.ReadWrite.All
+Register-Passkey -UserId breakglass1@<tenant>.onmicrosoft.com -DisplayName "Breakglass key 1"
+
+The key still has to be plugged in and touched, and you still won't have tested the sign-in. Check the module's current documentation before you use it, because this API is fairly new.
+
+I recommend option 1. It's about the same effort, and you finish with emergency accounts you know work.

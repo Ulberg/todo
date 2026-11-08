@@ -1,0 +1,12 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:30:40Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Use the pay-as-you-go subscription you created in step 2. It's the only one we'll use; everything in the plan runs in that one subscription.
+
+- Linking the subscription is only about billing. The External ID tenant shows up in your subscription as a resource, and its sign-up costs are billed there (free up to 50,000 monthly active users). It doesn't give app users any access to your Azure resources, and the two tenants stay separate.
+- If the dropdown shows more than one subscription, for example an old free trial alongside "Azure subscription 1", pick the one that's active and pay-as-you-go. That's the subscription ID you noted earlier.
+- rg-identity doesn't exist yet, so choose "Create new" in the form. For the resource group's location, pick the region we're using, Sweden Central. The tenant's data location is a separate setting; set that to Europe.
+
+One note for later: Pulumi will treat rg-identity as protected. The platform code can reference it but never delete it. Deleting it would delete the user directory.

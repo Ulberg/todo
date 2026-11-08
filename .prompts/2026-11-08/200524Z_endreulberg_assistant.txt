@@ -1,0 +1,16 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:05:24Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PLAN.md is now v6, and every design question is answered.
+
+- Service mesh is deferred (D32). It's listed in section 8 with its trigger: real calls between our own services, or a requirement to encrypt traffic inside the cluster. Until then I've written down one accepted risk. Two hops inside the cluster are plaintext: ingress to backend, and app to telemetry collector. Network policies restrict both, so only the allowed pods can send that traffic.
+- Database access goes through the db-access proxy pod (D33, section 4.1).
+
+The only thing left is your sign-off on the phase order in section 10. Once you give it, I'll start Phase 0:
+1. git init, and the first commit (the reference folders are already git-ignored).
+2. Create the public Ulberg/todo and Ulberg/platform repos and push to them.
+3. Tooling with all checks in CI: formatting, gitleaks, Dependabot.
+4. The Claude Code hooks that capture .prompts/ automatically.
+5. The Azure bootstrap checklist and script for you to run.

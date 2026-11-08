@@ -1,0 +1,73 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:46:39Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+You can create the apps now, but you can't install them yet: Ulberg/todo and Ulberg/platform don't exist. Creating them is the first step of Phase 0, which I'll do as soon as you say go.
+
+While working out the exact permissions I found a small gap, so I recommend 3 apps instead of 2. Pull-request previews also need to read GitHub settings, and they shouldn't get the admin app's key.
+
+Create each one under github.com → your avatar → Settings → Developer settings → GitHub Apps → New GitHub App.
+
+Settings shared by all three:
+
+| Field | Value |
+|---|---|
+| Homepage URL | https://github.com/Ulberg/platform |
+| Callback URL | leave empty |
+| Request user authorization (OAuth) during installation | off |
+| Enable Device Flow | off |
+| Webhook → Active | off (we don't need webhooks) |
+| Where can this GitHub App be installed? | Only on this account |
+| Account permissions | none |
+
+App names have to be unique across all of GitHub, so I've added the ulberg- prefix.
+
+1. ulberg-platform-admin (used by Pulumi in the approved apply job)
+
+Repository permissions:
+
+| Permission | Access | Why |
+|---|---|---|
+| Administration | Read and write | Rulesets, collaborators, repo settings, enabling secret scanning and push protection |
+| Contents | Read and write | Pushing the generated CODEOWNERS file to a branch |
+| Pull requests | Read and write | Opening that change as a PR, so it gets reviewed like everything else |
+| Environments | Read and write | Creating the dev environment with required reviewers |
+| Variables | Read and write | Non-secret settings such as Azure client and tenant IDs |
+| Metadata | Read (required) | |
+| Everything else, including Workflows and Secrets | No access | It can't change CI workflows or read secrets |
+
+Install it on both repos. Store it in the platform repo, in the dev environment only: the app ID as the variable PLATFORM_ADMIN_APP_ID, the private key as the secret PLATFORM_ADMIN_APP_KEY. Only an approved apply run can read them.
+
+2. ulberg-platform-reader (used by pulumi preview on pull requests)
+
+Repository permissions: Administration Read, Contents Read, Environments Read, Variables Read, Metadata Read. Everything else no access.
+
+Install it on both repos. Store it as repo-level secrets in the platform repo: PLATFORM_READER_APP_ID and PLATFORM_READER_APP_KEY. It can only read, and the repos are public anyway. GitHub never gives secrets to pull requests from forks.
+
+3. ulberg-platform-pr-bot (used by the todo repo's CI to propose deploys)
+
+Repository permissions:
+
+| Permission | Access | Why |
+|---|---|---|
+| Contents | Read and write | Pushing a branch with the new image tags and platform.yaml |
+| Pull requests | Read and write | Opening the PR |
+| Metadata | Read (required) | |
+| Everything else, including Workflows | No access | Pushes that touch workflow files are rejected, and rulesets block pushes to main |
+
+Install it only on Ulberg/platform. Store it in the todo repo, in an environment called release that only the main branch can deploy to: the variable PR_BOT_APP_ID and the secret PR_BOT_APP_KEY. Only CI on todo's main can then propose a deploy.
+
+For each app:
+- After creating it, click "Generate a private key". A .pem file downloads.
+- Paste it into the secret, then delete the file from your Downloads folder.
+- Rotate the keys about every 6 months. I'll add a reminder alert in Phase 5.
+
+How the automatic merge of tag-only PRs works with these permissions:
+- The generated CODEOWNERS gives the deploy-tag files no owner, while everything else is owned by the platform leads.
+- The ruleset requires code-owner review, a policy check, and 0 general approvals.
+- So a PR that only changes tags needs no human, and merges itself once the policy check passes.
+- Anything else, including platform.yaml, needs a platform lead.
+- No app ever gets a "bypass" on the rulesets.
+
+The apps don't depend on the repos existing, so you can do this before or after I create them. Should I go ahead with Phase 0 now, so you can install them?

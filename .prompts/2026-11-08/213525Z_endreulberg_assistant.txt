@@ -1,0 +1,34 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T21:35:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, that's almost certainly the problem. Nothing is lost; my checklist missed a step.
+
+Azure has two separate permission systems:
+- Entra roles, such as Global Administrator, control the directory: users, groups, app registrations.
+- Azure roles, such as Owner, control subscriptions and the resources in them.
+
+Being Global Admin gives no access to subscriptions. Only the owner account that created the subscription has Owner on it, so the admin sees 0.
+
+Check it (2 minutes):
+
+1. Sign in to portal.azure.com as the owner.
+2. Open Subscriptions. The owner should see it, with "Default Directory" in the Directory column.
+   - If the owner also sees 0, the signup really didn't finish. Go to Subscriptions → Add, or check that the card verification completed.
+   - If it's there, carry on below.
+
+Fix it (as the owner):
+
+3. Open the subscription → Access control (IAM) → Add → Add role assignment.
+4. Pick Owner, then the members "Endre Ulberg (Admin)", then Review + assign.
+5. If the portal asks for conditions on the Owner role, choose the option that lets the person assign all roles. The bootstrap script needs to create role assignments.
+6. Sign in as the admin. If the subscription still doesn't show, check the subscription filter: go to Settings (gear icon) → Directories + subscriptions, and make sure nothing is filtered out.
+
+Why this is fine for now:
+- The admin needs Owner to run the bootstrap. When Pulumi takes over, it turns that standing Owner assignment into a PIM-eligible role, so day to day you only hold Reader.
+- The owner account keeps its Owner role as the billing and recovery fallback.
+
+There's also a second route: as Global Admin, under Entra ID → Properties → "Access management for Azure resources", you can temporarily give yourself access to every subscription. You don't need it, since you have the owner account, and it's broader than necessary.
+
+I'll add this step to the checklist so it's there when the list goes into the platform repo.

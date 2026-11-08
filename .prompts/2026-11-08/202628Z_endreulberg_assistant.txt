@@ -1,0 +1,12 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T20:26:28Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Use an email. Sign up with a Microsoft account tied to an email address you control long-term, not GitHub sign-in.
+
+- Keep GitHub and Azure separate. The account you sign up with becomes the billing owner and the first admin of the tenant. If it's GitHub-backed, anyone who takes over your GitHub account takes over Azure too. The design deliberately trusts GitHub in only one narrow way: approved CI runs from one environment. Signing up with GitHub would undo that.
+- Recovery. Account recovery for a GitHub-backed Microsoft account goes through GitHub. If you lose access to GitHub, you could also lose the root of your Azure setup.
+- It won't affect daily work much. In step 4 you create a dedicated admin account inside the tenant and use it for everything. The signup account then only matters for billing and recovery, so pick an email that will outlive any job or project, and protect it with a passkey.
+
+Don't use a work email. This tenant should belong only to you.

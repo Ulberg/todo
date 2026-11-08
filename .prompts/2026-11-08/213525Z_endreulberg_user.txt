@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T21:35:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I have 0 subscriptions, even though I made the everything in the order you said. The subscription was made with the owner and not the admin, could that be a problem, or has something just got lost?

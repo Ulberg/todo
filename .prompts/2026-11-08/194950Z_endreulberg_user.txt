@@ -1,0 +1,19 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T19:49:50Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+1) It seems that for the repo we might also use CODE_OWNERS, and make it so that some people are allowed to update the repo code, it should be only the "lead" developers for each repo, and it shoiuld be defined in IaC. 
+2) Yes exactly!
+3) That sounds great! 
+4) I would maybe like to avoid RLS in the first version because it is quite hard to setup testing and have work locally. But it should be in a future works. 
+5) I mean as cheap as is feasible and normal, but remember, that we put security first, so VPC for the database, so it is not accessible from internet, and only the backend has allowed traffic to the database. I have not decided the level of security on database users. 
+6) That sounds good, if it is realiable enough that we can use it to work more locally before making changes to the "real application" 
+7) Ok, fine!
+
+Remainaing questino
+1) a) Do whatever Linux does. The same conceptual model. B) No, it should not have a roll-up feature. It seems like there should be a admin:share_creator that allows you to edit which permissions others have on a list, that should by default only be accessible to the creator of the todo. A developer needs to change in the db for more advanced situation. c) whatever is the linux conceptual model. d) Yes. And the point is that sharing should not uncover if a user exists or not in the system. You can just give access to someone without any insight into the user-base of the system. 
+2) Ok, that is fine. 
+3) Only after approval. 
+4) I would like either in Rust or F#, not Typescript. Custom domains can be done later. Explain the Entra P2/PIM first to allow me to consider properly. 
+5) I do not have Azure subscriptions or tenancies. Also just do it on my regular one "Ulberg"

@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T20:24:35Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+No, i meant the list of things I needed to do manually to setup azure etc

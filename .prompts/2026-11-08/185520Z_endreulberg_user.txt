@@ -1,0 +1,45 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-08T18:55:20Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I want to build an application. I will start this by defining several parts of the project, including several steps that should be done in order. 
+
+Firstly It is important that all prompts are stored in a folder called .prompts which contains everything ever written by anyone in this repo. That should also be explicitly written in the Agents.md.  This includes this prompt and is used as context for the future. It should only contain user prompts and final replies, not COT. It should be either formatted as .log which contains a full session, or be .txt files which is per message you can decide. 
+
+Secondly the agents.md should include the following passage: When developing in this project everything is infrastructure and AI-first. That means that before developing any features we always ensure the proper infrastructure is in place, an example is that we start the whole project by setting up CI/CD, access controls (both in infra and in applicaiton) before doing anything else. This includes things like tracing, telemetry, and logs. Also setting up A2A integraitons should be a first-class citizen, meaning that we always implement it as an integrated part of each feature, taking into consideration if there are any security concerns by giving agents access to any given functionality. We also want to keep the application clean, so we always fix a problem before moving on to the next task. No broken-windows. 
+
+Finally I'll explain the project. 
+
+# Project
+From a high-level this is a show-case application meant to show how to use AI-first development to build a infrastructure- and AI-first application. This means that we develop purely with AI, building an application that can as easily be used by humans as agents, with a heavy emphasis on making it sound from a infrastructure perspecitve and make it debugable by a AI from end-to-end. In practice this means that the setups of technologies like Pulumni, CI/CD, logs, access control, Grafana, Loki, Prometheus are all core to the application itself. It also means that ever part of the system and infra must have strict securtiy and access control, but be enabled to allow an agent with the correct rights to be able to access traces, logs, and insights all the way from frontend to database to infrastructure. The application side is simply meant to be a todo application. You can create a todo, list your todos, edit your todos, and you have the ability to share access to a given todo to other emails such that another person can gain access to it. 
+
+# Technologies 
+
+The application is written in F# running on Azure via Pulumni. The application stores data in Postgresql managed in Azure. The auth should be Entra-based, both for the users to login to the application, and for the adminstrators of the infra to gain access to the infra. We will use OpenTelemetry for observability with Loki, Grafana and Promethus. The system should run in Kubernetes pods, with strict networking and scaling rules to ensure the cloest to zero-trust being 
+enforced from infra. This includes regular security like protection from CSRF,CORS by ensuring both the frontend and backend only accept traffic from correct sources. 
+
+The frontend will be a simple react app, using the tanstack technologies with CSR and ShadCN for styling. Trying to be as standard and non-controversial as possible. It should use the open-fetch with a OpenAPI spec from the backend similar as what is found in the reference. 
+
+All of the code will be developed with Claude, so there needs to be safe ways to give access to Claude to the logs from all parts of the system, fe, be, db and infra. 
+
+# Architecture 
+
+The system is a simple backend hidden behind the a load balancer with atleast two pods running at any point that point to a single shared database. The architectural pattern of the application is similar to what is found in the "reference" folder. That means that any request that hits the backend that is after having a user will take the email from the JWT and use that to lookup the permissions, using those permissions to get the correct rows from the backend.
+
+Any request follows the same patterns as the reference. We parse don't validate the payloads that hit the API (use the new HTTP Query if that is possible), and then we take the data into a domain type, which is later translated to a DBO. And the same thing is done in reverse from the database to the frontend. 
+
+Aside from that we will use whatever A2A communciation system that makes all functionality available to agents in the same way as humans. That should be researched and explained before being started, so I can accept the proposed solution. 
+
+# Development order
+
+As mentioned before the system will start by first setting up a very small application with CI/CD and the correct infra. That means we start with a F# Oxpecker application, and then we add bit by bit the infra we need. That means traces, logging, telemetry, health checks. This includes setting it up in Azure, meaning the Pods, Kubernetes, the Database, Entra, Loki, Grafana, Promethus, and security settings. This includes ArgoCD to make it such that no applicaiton developer has access to the infra or control over deployment. 
+
+When the system is actually running on all the technologies and we will need to add the shell that makes it such that A2A can be working, but that is a bit TBD
+
+When we have made a shell that has end-to-end setup such that adding any feature will make it simple to follow the high-level architecutre, then we can develop endpoints like list todos, create todo, edit todo, delete todo, and finally delete todo. 
+
+When that is working we can add the final thing that is shareable lists. 
+
+
+Before moving to developing anything I want you to ask any follow-up questions, and any clarifications, I do not like being surprised by akward choices. That means we should make a PLAN.md that has steps which we agree to and discuss before begingin work
