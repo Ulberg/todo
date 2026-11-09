@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v7. Phase 0 in progress** (bootstrap done; the `access` Pulumi stack is in review as a platform PR).
+> **Status: v8. Phase 0 in progress** (the `access` stack is applied; standing admin access is being removed). v8 adds the release flow to prod (D37, D38).
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -50,15 +50,29 @@ auth:
 egress: []                     # anything outside the cluster has to be listed
 ```
 
-Flow:
-1. App CI validates `platform.yaml` against the schema, builds and signs the images, and pushes them to ACR.
-2. A GitHub App with **only** "open PR" rights on the platform repo opens a PR with the new image tags and the current `platform.yaml`.
-3. Platform CI checks the request against policy.
-   - **Image-tag-only change that passes policy → auto-merge.**
-   - **Any `platform.yaml` change → approval from a platform lead.**
-   - How it's enforced: in the generated `CODEOWNERS`, the deploy-tag files have no owner and everything else is owned by the platform leads. The ruleset requires code-owner review + the policy check, with 0 general approvals. No app gets a ruleset bypass.
-   - GitHub Apps: `ulberg-platform-admin` (apply job only, `dev` environment), `ulberg-platform-reader` (PR previews, read-only), `ulberg-platform-pr-bot` (todo `main` → PRs on platform).
-4. **Platform CI runs `pulumi up` only after approval.** The apply job runs in a GitHub **Environment** (`dev`) whose required reviewers are the platform leads. The Azure federated credential trusts *only* `repo:Ulberg@<owner-id>/platform@<repo-id>:environment:dev` (GitHub's subject carries immutable IDs, so a renamed or recreated repo doesn't match), so a workflow without that approval can't even get an Azure token. PR previews use a separate read-only identity. (This is the reference-infra OIDC pattern, scoped tighter.) ArgoCD syncs the platform repo into the cluster. Nobody applies from a laptop.
+Flow, from change to prod (D37):
+1. **Change.** An app developer opens a PR in `todo`. The app's repo lead approves it as code owner, and it merges to `main`.
+2. **Build.** App CI validates `platform.yaml` against the schema, builds and signs the images, and pushes them to ACR.
+3. **Deploy to dev.** A GitHub App with **only** "open PR" rights on the platform repo (`ulberg-platform-pr-bot`) opens a PR that sets the new image tags in `apps/todo/dev/` together with the current `platform.yaml`. Platform CI checks it against policy.
+   - **Image-tag-only change that passes policy → auto-merge**, and ArgoCD syncs it into dev. Tags are GitOps manifests, not Pulumi, so no environment approval is involved.
+   - **Any `platform.yaml` change → approval from a platform lead.** If it needs Azure resources, the Pulumi apply also waits for a platform lead (step 5).
+4. **Release to prod.** When the dev deploy is healthy and the post-deploy smoke tests pass, the pr-bot opens (or updates) one **release PR** per app that copies exactly those tags to `apps/todo/prod/`.
+   - Policy check: the tags must be the ones running healthy in dev, and the images must be signed.
+   - **The app's repo leads approve it** (they are the code owners of `apps/todo/prod/` tags). The merge is the release: ArgoCD syncs prod.
+   - A release PR that changes anything besides tags also needs a platform lead.
+   - Rollback is a release PR with the previous tags, with the same approval.
+5. **Platform CI runs `pulumi up` only after approval.** Each environment's apply job runs in a GitHub **Environment** (`dev`, later `prod`) whose required reviewers are the platform leads. The Azure federated credential trusts *only* `repo:Ulberg@<owner-id>/platform@<repo-id>:environment:<env>` (GitHub's subject carries immutable IDs, so a renamed or recreated repo doesn't match), so a workflow without that approval can't even get an Azure token. PR previews use a separate read-only identity. (This is the reference-infra OIDC pattern, scoped tighter.) Nobody applies from a laptop.
+
+How it's enforced:
+- The platform repo's `CODEOWNERS`, generated from `people.yaml` and checked by the `access` stack (§2.2):
+  - `apps/<app>/dev/` tags have no owner;
+  - `apps/<app>/prod/` tags are owned by that app's repo leads;
+  - everything else is owned by the platform leads.
+- The ruleset requires code-owner review plus the policy check, with 0 general approvals. No app and no bot gets a ruleset bypass.
+- GitHub Apps:
+  - `ulberg-platform-admin`: the apply job only, in the `dev` and `prod` environments;
+  - `ulberg-platform-reader`: PR previews, read-only;
+  - `ulberg-platform-pr-bot`: deploy PRs from todo `main`, and release PRs.
 
 ### 2.2 Access defined as code (IaC)
 
@@ -100,7 +114,7 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D4 | App users sign in with **Entra External ID** (anyone can sign up). Admins/developers use the **workforce tenant** | msg 2 |
 | D5 | Separate **platform repo**, driven by `platform.yaml` (§2.1) | msg 2 |
 | D6 | **SPA + MSAL (PKCE), bearer token in `Authorization` header**. No auth cookies, strict CORS | msg 2 |
-| D7 | One `dev` environment; cheapest *normal* setup with security first (§9) | msg 2–3 |
+| D7 | Cheapest *normal* setup with security first (§9). Starts with one `dev` environment; `prod` is added after Phase 6 (D38) | msg 2–3 |
 | D8 | Features: create, list, get, edit, delete | msg 2 |
 | D9 | Access matrix per group (§5). App devs' Claude gets **app logs + metrics + traces** | msg 2–3 |
 | D10 | **No HTTP `QUERY`**; `GET` + query params for reads | msg 2 |
@@ -130,6 +144,8 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D34 | **Bootstrap exception:** while you are the only person (infra dev, admin, app dev and lead of both repos), commits go straight to `main` without required review. GitHub doesn't allow approving your own PR. This is temporary; see the TODO in §13 | msg 7 |
 | D35 | The owner Microsoft account keeps only its billing role: no Global Admin and no subscription Owner, not even eligible | msg 2026-11-09 |
 | D36 | Subscription **Owner only via the break-glass accounts**. `platform-admin` (PIM, 1 h) gets no Owner | msg 2026-11-09 |
+| D37 | **Release flow** (§2.1). A PR approved by the app lead merges to app `main`; tag-only changes auto-deploy to `dev`; a release PR copies the dev tags to `prod`, and **the app lead approves it** | msg 2026-11-09 |
+| D38 | **`prod` gets its own AKS cluster, Postgres, VNet and Key Vault** (own resource groups, same subscription). It is built after Phase 6, once the solo-dev exception (D34) is gone | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -165,6 +181,7 @@ Everything after that, including PIM settings and Conditional Access, is Pulumi.
 |---|---|---|---|---|---|
 | Change infra | Approve PR → CI applies | Writes code, opens PRs; never applies | ✗ | ✗ | ✗ |
 | Merge into a repo | If listed as that repo's lead | ✗ (only opens PRs) | If listed as that repo's lead | ✗ | ✗ |
+| Release an app to prod (approve its release PR) | If listed as that app repo's lead | ✗ | If listed as that app repo's lead | ✗ | ✗ |
 | Azure resources (read) | Reader | Reader | ✗ | ✗ | ✗ |
 | Kubernetes (read: pods, events, describe) | Read-only RBAC | Read-only RBAC | ✗ | ✗ | ✗ |
 | Database | Read-only role (dev) | Read-only role (dev) | ✗ | ✗ | Own/granted rows via the app |
@@ -287,7 +304,9 @@ Each grant is a set of independent bits on one todo for one email, just like `rw
 | Entra ID P2 | 1 license (you); +1 per extra infra developer | ~9 |
 | **Total** | | **~175–190** |
 
-Savings levers: stop AKS + Postgres between demos. Trade-off kept: no managed WAF (Application Gateway WAF costs more than the rest combined). Instead we use rate limiting, strict routing, security headers and app-level parsing.
+**With `prod` (D38)**, the cluster, Postgres, ingress, storage and network costs repeat, so the total is about **USD 350/month**. ACR, Entra and P2 licences are shared.
+
+Savings levers: stop AKS + Postgres between demos (both environments). Trade-off kept: no managed WAF (Application Gateway WAF costs more than the rest combined). Instead we use rate limiting, strict routing, security headers and app-level parsing.
 
 ## 10. Phases (in order; each ends green in CI with no broken windows)
 
@@ -321,7 +340,8 @@ Savings levers: stop AKS + Postgres between demos. Trade-off kept: no managed WA
 - **Done when** everything exists, and the access tests show: app devs can change nothing; infra devs' Claude can read but not write; the DB isn't resolvable or reachable from outside the VNet.
 
 ### Phase 4: GitOps + cluster baseline on Azure
-- ArgoCD (Entra SSO, admin login disabled), app-of-apps, the `platform.yaml` PR flow, signed images + admission policy.
+- ArgoCD (Entra SSO, admin login disabled), app-of-apps, the `platform.yaml` PR flow (§2.1 steps 1–3), signed images + admission policy.
+- The release-PR flow (§2.1 step 4): the pr-bot opens it, the policy check runs, and the path-based `CODEOWNERS` (app leads own `apps/<app>/prod/`) is generated and checked by the `access` stack. Until prod exists (Phase 6b), nothing syncs `apps/<app>/prod/`.
 - Backend ≥2 replicas, HPA, PDB, topology spread; default-deny network policies (identical to tier 2).
 - **Done when** an app-repo merge reaches the cluster with no human touching the cluster.
 
@@ -336,6 +356,12 @@ Savings levers: stop AKS + Postgres between demos. Trade-off kept: no managed WA
 - External ID JWT validation (issuer, audience, scopes, **verified email**), email → user → permissions (`bindPermissionsByBearer` pattern), deny by default.
 - Users table, migrations Job.
 - **Done when** the security suite (authz matrix, CORS, headers, anonymous/wrong-scope rejection) passes locally and against dev.
+
+### Phase 6b: `prod` environment + releases (D37, D38)
+- First: remove the solo-dev exception (D34, §13), so every change to `main` gets a review.
+- A `prod` Pulumi stack from the same code: its own AKS cluster, Postgres, VNet and Key Vault. A `prod` GitHub environment whose reviewers are the platform leads, and an apply identity federated to it.
+- ArgoCD syncs `apps/<app>/prod/` into the prod cluster. Post-deploy smoke + access tests run against both environments.
+- **Done when** an app change goes PR → app-lead approval → dev (automatic) → release PR → app-lead approval → prod, with no human touching either cluster, and an app developer who isn't a lead can't release.
 
 ### Phase 7: Frontend shell
 - Vite + React + TS, TanStack Router (CSR) + Query, shadcn/ui, MSAL.
@@ -396,11 +422,10 @@ Tests: unit + property (domain), Testcontainers (storage), in-process API tests,
 - `pgaudit` + column-level grants (§9.2 option C).
 - "Leave a share": a grantee drops their own access (D27).
 - Custom domain.
-- `prod` environment (a new Pulumi stack, same code).
 - Managed WAF, or Coraza in Envoy.
 - A2A Agent Card, if the app ever contains its own agent.
 - **TODO, solo-developer exception (D34).** Remove the bootstrap exception so every change to `main` gets a review, even with one person. Proposed approach:
   - Claude gets its own GitHub identity (a `ulberg-claude` GitHub App with only contents + pull-request access) and opens every PR as that app.
   - The human lead reviews and approves as code owner. Required reviews are switched on in the rulesets, with no bypass for anyone.
   - Human-authored changes go through Claude-opened PRs as well, or wait for a second lead.
-  - This must be done before a `prod` environment exists, and before anyone else joins.
+  - This must be done before a `prod` environment exists (first step of Phase 6b), and before anyone else joins.
