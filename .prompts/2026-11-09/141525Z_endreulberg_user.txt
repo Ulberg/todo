@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:15:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Admin > {"sessionId":"19f34f22b1b04f3d8185a8b44a44104b","subscriptionId":"","resourceGroup":"","errorCode":"401","resourceName":"","details":"You don't have access to this data. Please contact your global administrator to get access."} Owner > {"sessionId":"0c9958f96eb54e8ba2d138e00f28e625","subscriptionId":"","resourceGroup":"","errorCode":"401","resourceName":"","details":"You don't have access to this data. Please contact your global administrator to get access."}

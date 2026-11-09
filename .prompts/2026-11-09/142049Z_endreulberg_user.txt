@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:20:49Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+It means that giving Global Admin to Admin worked for reading Report-Only, but since Owner is not eligable it cannot view that pan

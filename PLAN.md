@@ -255,7 +255,7 @@ Each grant is a set of independent bits on one todo for one email, just like `rw
 **Conditional Access** (replaces security defaults; the emergency accounts are excluded from every policy):
 - CA01: MFA for everyone in the workforce tenant;
 - CA02: block legacy authentication;
-- CA03: phishing-resistant MFA for Azure management;
+- CA03: phishing-resistant MFA for Azure management, for members (not guests: the owner Microsoft account can't register a passkey in the tenant and would lose billing; guests have no other Azure access, and CA01 still requires MFA);
 - CA04: sign-in risk policies (Identity Protection, a P2 feature) for infra developers;
 - CA05: a fresh phishing-resistant sign-in for **every** PIM activation. An authentication context with sign-in frequency "every time", which the PIM policies of Global Admin, `platform-write` and `platform-admin` require. Without it, PIM accepts the MFA from an hours-old sign-in (D39);
 - CA06: Azure portal, CLI and ARM for infra developers: sign in again every 4 h, no persistent browser session (D39);

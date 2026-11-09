@@ -1,0 +1,13 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:12:50Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+CA09 is in PR #11. All checks pass, and the preview is exactly what switching on should do:
+- **1 create:** CA09.
+- **9 updates:** the 7 provider-managed policies switch from report-only to enforced, and the two group PIM policies switch to "fresh passkey".
+- **2 replaces:** CA05 (enforced) and the Global Admin PIM rules (fresh passkey).
+
+PLAN.md now lists CA08 and CA09.
+
+Do the fresh sign-ins (admin in a private window, owner opening billing) with Global Admin active, and tell me when you're done. I'll read the report-only results, and if nothing would have blocked a sign-in you need, I'll merge #11 for you to approve.

@@ -1,0 +1,16 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:20:49Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Right: the owner account has no roles now, so it can't open the logs. That's intended. But it doesn't need to: **the sign-in log shows every user's sign-ins**, so your admin account with Global Admin can look at the owner's as well.
+
+In the same list, as the admin:
+1. Click the entry for **`admin-azure.stubble162@simplelogin.com`** at **14:09 UTC** (15:09 your time). It's the owner account's sign-in to the portal.
+2. Open the **Report-only** tab and tell me what **CA03** and **CA09** show.
+3. Do the same for your admin sign-in (`endre@…`, 14:08 UTC), and tell me if any policy shows **Failure**.
+
+If it's easier to filter, set **User** to `admin-azure` in the list:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/SignIns
+
+CA09 won't appear there yet, since it only arrives with PR #11. CA03 is the one that matters.

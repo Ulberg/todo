@@ -1,0 +1,22 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:15:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Your sign-ins worked. The reason I can't see the report-only results is a permission on my side, not your setup:
+- **The empty list is a permissions effect.** The Conditional Access results in the sign-in logs are only returned to a caller who may also read Conditional Access policies. My CLI session can read the logs but not the policies, so the policy list comes back empty for every sign-in.
+- **The 401 errors in the portal** have similar causes: your Global Admin activation has most likely expired (1 h maximum), and the owner account has no roles at all now.
+
+**So the check needs you, with Global Admin active:**
+1. Activate Global Admin. It still uses MFA, not yet the fresh passkey:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+2. Open the sign-in logs:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/SignIns
+3. Click these entries and open the **Report-only** tab on each:
+   - `admin-azure.stubble162@simplelogin.com` at 14:09 UTC (15:09 your time);
+   - `endre@…` at 14:08 UTC.
+4. Tell me any policy that shows **"Report-only: Failure"**.
+
+**One thing I noticed in the log:** at 14:07 the owner account's sign-in first stopped with error **50072**, which means "must register for MFA". It then succeeded at 14:08. So the owner account has just registered an MFA method in this tenant.
+- **Which method did you register?** If it was the Authenticator app or SMS, CA03 (phishing-resistant MFA for the Azure portal) will block the owner from the portal, and with it from billing, once it's switched on.
+- The Report-only tab will show it as a failure for CA03. If so, the fix is to apply CA03 to members only, not guests, before switching on.

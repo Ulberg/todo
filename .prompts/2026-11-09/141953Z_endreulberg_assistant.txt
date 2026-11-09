@@ -1,0 +1,16 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:19:53Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Good, you can see the logs now. What does the **Report-only** tab show for the two sign-ins?
+
+- **The owner account's sign-in (14:09 UTC):** in particular, what does CA03 say?
+- **The admin's sign-in (14:08 UTC):** does any policy show **"Report-only: Failure"**?
+
+**What the results mean:**
+- **"Success" and "Not applied"** are both fine.
+- **"Report-only: User action required"** is also fine. It means the user would have had to complete MFA.
+- **"Failure"** means the policy would have blocked that sign-in.
+
+If nothing shows Failure, I'll merge #11. If CA03 fails for the owner, I'll first exclude guests from CA03.
