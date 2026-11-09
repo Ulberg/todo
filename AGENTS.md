@@ -66,3 +66,5 @@ One-time setup, after the platform apply has created the account (direct links a
 5. Add `"env": {"AZURE_CONFIG_DIR": "<your home>/.azure-agent"}` to `~/.claude/settings.json` and restart Claude Code.
 
 When Claude reports that the agent's session expired, repeat step 4.
+
+Tests: `.claude/hooks/test_agent_identity.py` (CI, both repos); the platform repo's `check_agent_access.sh` compares each agent's real rights with the above on every PR, on main and nightly; `scripts/agent-smoke-test.sh` in the platform repo is the manual test Claude runs as the agent (reads work, writes are refused).

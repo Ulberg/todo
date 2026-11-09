@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T21:54:01Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The preview is now exactly what it should be: **9 creates** (agent account, password, group, membership, 4 Azure roles, Security Reader) and **4 updates** (CA04, CA06, CA07, CA08 now include the agents). No replace.
+
+PR #13 is ready: https://github.com/Ulberg/platform/pull/13. All checks pass, and the todo repo has the matching PLAN.md (D41) and AGENTS.md §4.
+
+**One side effect, already active:** the hook is on in this session, so I can no longer run `az` with your login. For example, I can't read the sign-in logs for you anymore. That's intended. I'll be able to again once the agent is set up.
+
+Say "merge", then approve the apply. After that, the one-time setup, all as Global Admin (activate it first; it now asks for your passkey):
+1. **Licence:** assign Entra ID P2 to `endre-agent`. If no licence is free, buy one more first.
+   - Find the user: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers → **Licenses** → **Assignments**.
+   - Buy licences: https://admin.microsoft.com/#/catalog
+2. **Temporary Access Pass:** on the same user, **Authentication methods** → **Add authentication method** → **Temporary Access Pass**.
+3. **Passkey:** in a private window, sign in as `endre-agent@adminazurestubble162simplel.onmicrosoft.com` at https://aka.ms/mysecurityinfo with the pass, then **Add sign-in method** → **Passkey**.
+4. **Terminal (your own, not via me):** run the login command from AGENTS.md §4 and sign in as `endre-agent`.
+5. **Claude Code setting:** add the setting from AGENTS.md §4 to `~/.claude/settings.json`, then restart Claude Code.
+
+After the restart I'll check that I'm signed in as `endre-agent`, that I can read, and that writing is refused.
