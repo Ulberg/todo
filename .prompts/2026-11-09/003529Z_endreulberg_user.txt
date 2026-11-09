@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:35:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Also, think about the Yaml.fs, is there a very common package that solves this more beautifully, or is the implementation of making your own private methods prudent?

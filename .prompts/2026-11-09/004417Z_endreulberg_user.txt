@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:44:17Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Another question. In the let groups function of Entra.fs, is that mutating the let g value? Because that is not then a pure function. Idempotency and lack of side-effects are important

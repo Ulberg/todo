@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:45:35Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+If you have F# code like that, you need to structure it as input data  -> domain model -> action -> log results / failures / alert etc. So nothing like mutating inside of functions like that

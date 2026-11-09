@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:32:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Client-ID from the Github Apps? Also, I feel like the People.fs is the most problematic file. If you look at that against the code in the reference F# project, can you see the difference in quality and style?

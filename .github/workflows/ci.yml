@@ -38,3 +38,11 @@ jobs:
         run: python3 .github/scripts/check_prompt_log.py
       - name: Test the prompt-log hook
         run: python3 .claude/hooks/test_prompt_log.py
+
+  fsharp-style:
+    name: fsharp style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No mutation, discarded results or null (docs/fsharp-style.md)
+        run: .github/scripts/check_fsharp_style.sh

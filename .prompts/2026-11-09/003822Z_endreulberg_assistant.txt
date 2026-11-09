@@ -1,0 +1,24 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:38:22Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+All checks on [PR #2](https://github.com/Ulberg/platform/pull/2) are green, and CI's `pulumi preview` shows the same plan as my local run: **20 to create, 2 to import, no errors**. GitHub-side sign-in and Azure sign-in both work in CI now.
+
+I set the client IDs as variables:
+- **Reader:** `PLATFORM_READER_APP_CLIENT_ID`, at repo level in platform.
+- **Admin:** `PLATFORM_ADMIN_APP_CLIENT_ID`, only in the platform `dev` environment.
+- **PR bot:** `PR_BOT_APP_CLIENT_ID`, only in the todo `release` environment. Nothing uses it until Phase 4.
+
+I deleted the old `*_APP_ID` variables because nothing uses them anymore, and added the ID table to `bootstrap/README.md`.
+
+The preview log has one warning: the Pulumi action shows its own `dotnet build` output line as a warning. The build itself has no warnings. I'll check whether a setting in the action removes it in the next PR.
+
+**What you do now:**
+1. **Merge PR #2.** The rulesets don't exist yet, so merging works normally.
+2. The merge starts the `pulumi` workflow on `main`: first the preview job, then `pulumi up` waits for you. Open the run, check the preview step's summary, and **approve the `dev` deployment**.
+3. Then the stack is applied: the Entra groups and your memberships, PIM eligibility for `platform-write` (2 h) and `platform-admin` (1 h), Reader for `platform-read`, and the `main` rulesets on both repos.
+
+**After the apply:** pushes to `main` need signed commits, a code-owner review and green checks, and only your admin role can bypass that (D34). My commits are currently unsigned and go through your bypass. That's the solo-developer exception we already recorded, and the `ulberg-claude` app in PLAN.md §13 is what removes it.
+
+Once the apply is green, Phase 0's "done when" is met. The two follow-ups are next: switching Conditional Access on (you turn security defaults off first) and moving the Entra admin roles to PIM.

@@ -1,0 +1,39 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:06:55Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've opened [Ulberg/platform#2](https://github.com/Ulberg/platform/pull/2) with the next Phase 0 step: a Pulumi F# stack that builds everyone's access from `access/people.yaml`. CI can't run its preview yet: I need one value from you, below.
+
+**What the stack creates** (I ran a preview locally: 20 things to create, 2 to import, no errors; nothing has been applied):
+- **Entra groups:** `infra-developers` and `app-developers`, plus three nested access levels: `platform-read` ⊃ `platform-write` ⊃ `platform-admin`. `platform-read` gets Reader on the subscription.
+- **PIM:**
+  - `platform-write` (break-glass) is open to infra developers for at most 2 h, with MFA and a justification.
+  - `platform-admin` is open to platform leads for at most 1 h.
+  - PIM won't let a direct assignment expire sooner than 15 days, so that's the limit. Normal access only comes from activating PIM.
+- **Conditional Access:** the four policies are written but switched **off**, because Entra won't allow them while security defaults are on.
+- **GitHub:**
+  - Both repos get rules on `main`: a PR with code-owner review, required checks, signed commits, and no force-push or deletion.
+  - Only your admin role can bypass these rules (D34); no GitHub App can.
+  - It also manages the `dev` and `release` environments, and fails the run if any repo's CODEOWNERS doesn't match `people.yaml`. I pushed todo's CODEOWNERS file directly to `main`, as D34 allows.
+- **CI:**
+  - A format, build and test job, which passes.
+  - `pulumi preview` on every PR and on `main`, and `pulumi up` only after you approve `dev`.
+  - Running the preview on `main` too means you see what an apply will change even when you push directly without a PR.
+
+**Bootstrap changes I made in Azure while doing this:**
+- **Sign-in rules:** GitHub's sign-in tokens for this repo include fixed account and repo IDs, so a renamed or recreated repo can't get them. The original rules used only the repo name, which is why the first CI run failed. I updated both CI identities and `bootstrap.sh`; Azure sign-in in CI works now.
+- **Preview on `main`:** I added a sign-in rule so the read-only preview identity can also run on `main`.
+- **Stack record:** I created the empty `main` stack record in the state storage from my session. It holds no resources, only the encrypted key.
+
+**What I need from you:** the **Client ID** of two GitHub Apps. It's in GitHub → Settings → Developer settings → GitHub Apps → the app, and starts with `Iv23…`. It isn't secret. The newest version of the GitHub action that creates app tokens no longer accepts app IDs.
+- `ulberg-platform-reader`
+- `ulberg-platform-admin`
+
+When you send them I'll set the variables, rerun the preview and show you its output. Then you merge the PR and approve the apply in `dev`.
+
+**Next, as separate PRs:**
+1. **Conditional Access on:** you turn security defaults off, I apply the policies in report-only mode, you check the sign-in logs, and I switch them on the same day. Report-only doesn't enforce MFA, so that window should stay short.
+2. **Entra admin roles to PIM:** your standing Global Admin and the bootstrap roles on the state storage and Key Vault become time-limited PIM roles (max 1 h). This part needs a small script that runs in CI, because Pulumi can't set those PIM rules.
+
+PLAN.md is updated with this status.

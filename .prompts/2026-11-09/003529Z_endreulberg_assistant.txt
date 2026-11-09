@@ -1,0 +1,28 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:35:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+**Client IDs:** yes, from the GitHub Apps. Go to GitHub → Settings → Developer settings → GitHub Apps → *Edit* next to the app. The **Client ID** (starts with `Iv23…`) is near the top of the General page, just under the App ID. I need it for `ulberg-platform-reader` and `ulberg-platform-admin`. It isn't secret.
+
+**People.fs against the reference:** you're right, there was a clear gap, and I've rewritten it:
+
+| | Before | Reference style (now) |
+|---|---|---|
+| Structure | Walked the YAML tree node by node and checked the rules in the same code | A **DTO** (the file exactly as written, every field nullable), then a separate **DTO → domain** step |
+| Values | Plain `string`/`Guid` (`Key`, `GitHub`, `EntraObjectId`) | **Single-case types with private constructors**: `PersonKey`, `GitHubHandle` (checked against GitHub's username rules), `EntraObjectId`, `RepoName`. Each has a companion module with `parse` and `value` |
+| Building records | Field-by-field binding with my own error prefixes | `Person.create <!^> PersonKey.parse … <*^> GitHubHandle.parse … <*^> EntraObjectId.parse …`, the same applicative pattern as the reference |
+| Known sets | Map keys looked up by string | `Access` has explicit fields (`infraDevelopers`, `appDevelopers`, `platformLeads`) |
+| Naming | PascalCase records | camelCase fields, like the reference |
+
+`People.fs` is now ordered domain, then DTO, then DTO → domain, and nothing else depends on YAML.
+
+I kept one deliberate difference: errors are message strings with their location (e.g. `people.bob: 'entra': … is not an object ID`), not the reference's `Error` union. A config file only has validation errors, so a union with one case wouldn't add anything.
+
+**Yaml.fs:** making my own helpers wasn't prudent. YamlDotNet's deserializer, which we already depended on, fills typed DTO records directly. Walking the YAML tree by hand rebuilt what it already does. It also rejects unknown keys, so a misspelled `repo-lead:` is now an error instead of being silently ignored. `Yaml.fs` is gone. What's left is `Parse.fs` (49 lines): small field parsers shaped like the reference's `notNullOrEmpty`, plus the one call that deserializes the YAML.
+
+Another library worth knowing is Thoth.Json, which reads the data in one step and gives errors with their location. But it needs YAML turned into JSON first and stops at the first error, so YamlDotNet + DTO is the better fit here.
+
+I added 4 tests for things the old version missed: an invalid GitHub handle, a misspelled group, a misspelled section, and a person with no fields. All 14 tests pass and formatting and the build are clean. The local preview still shows exactly 20 to create and 2 to import, so the plan is unchanged. It's pushed to [PR #2](https://github.com/Ulberg/platform/pull/2).
+
+I also updated my saved style memory to follow the reference's DTO → domain approach.

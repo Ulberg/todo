@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:26:02Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Seems like the FsToolkitErrorHandling would be helpful, and also it seems like in files like People.fs you are making a lot of F# code that should be in a lib.fs or something as privates in a single file.

@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:41:11Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+It feels inprudent to use null types so much, either we are using option types or result types, not nulls. This is part of writting F#, it should be documented somewhere. There is a F# for fun and profit, which explains many of the F# fundamentals, maybe you should reference it for your code style md or similar for this project?

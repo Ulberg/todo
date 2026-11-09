@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:46:00Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+This needs to be written down in the code style as well! You cannot do this in any file

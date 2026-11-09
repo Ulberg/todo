@@ -1,0 +1,14 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:26:02Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I made both changes and pushed them to [PR #2](https://github.com/Ulberg/platform/pull/2). Formatting and the build are clean, and all 15 tests pass, including 4 new ones for the YAML helpers.
+
+- **FsToolkit.ErrorHandling (5.2.0)** replaces my own result builder and the `orError` and `traverse` helpers. `parse` now uses `validation {}`, so it still reports every error in the file at once, without my hand-written error merging.
+- **`stacks/access/Yaml.fs`** holds the general YAML helpers. One new helper, `within`, adds the location to each error message (e.g. `groups.app-developers: unknown person 'carl'`), so `People.fs` no longer adds it by hand.
+- **`People.fs`** went from 234 to 158 lines and now only holds the rules for `people.yaml`: which groups are required, unique GitHub handles, and two emergency accounts.
+
+I saved this as a style preference: use established libraries before writing my own helpers, and keep general helpers in their own module.
+
+I still need the **Client IDs** (`Iv23…`) of `ulberg-platform-reader` and `ulberg-platform-admin`. The PR's CI preview stays red until I can set them.
