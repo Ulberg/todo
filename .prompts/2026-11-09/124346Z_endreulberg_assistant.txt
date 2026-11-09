@@ -1,0 +1,27 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:43:46Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The apply succeeded. Pulumi read all five Global Admin rules back from Graph and each matched what we set, so this time "set" is confirmed rather than assumed:
+- activation for at most 1 h, with MFA and a justification;
+- permanent eligibility allowed;
+- direct active assignments expire after 15 days and need MFA and a justification.
+
+**Please check it in the portal:** open the role-settings list and click **Global Administrator**:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ResourceMenuBlade/~/roleSettings/resourceId//resourceType/tenant/provider/aadroles
+
+- **Activation:** maximum 1 hour, Azure MFA, justification required.
+- **Assignment:** "Allow permanent active assignment" unchecked (15 days), and MFA required on active assignment.
+
+If it still shows 8 hours, the portal may be caching. Reload once.
+
+**Then the next step needs your yes:** removing the standing roles, in two approved runs:
+1. Remove only your admin account's standing Global Admin. You then activate it here as the real test (the owner account and break-glass accounts remain as a fallback):
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+2. Once that works, remove the rest:
+   - the admin's subscription Owner, Blob Data Contributor and Key Vault Crypto Officer;
+   - the owner account's Global Admin and Owner;
+   - and give the break-glass accounts subscription Owner.
+
+The same PR adds a check to the `access` stack that fails if anyone else holds standing Global Admin or subscription Owner. Shall I build that?

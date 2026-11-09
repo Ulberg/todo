@@ -1,0 +1,10 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:30:20Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've saved this as a standing rule: every step I ask you to do in a portal comes with its own direct link.
+
+Once you've checked both pages, tell me what you saw. Also confirm whether the two-step removal is fine:
+1. First run: remove only your admin account's standing Global Admin, then you test activating it through PIM.
+2. Second run, after the test works: remove the remaining standing roles and give the break-glass accounts subscription Owner.

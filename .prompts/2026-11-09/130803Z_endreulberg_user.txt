@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T13:08:03Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+It worked. So now I can active global admin as needed to do specific tasks in the infra, but generally the user does not have global admin?

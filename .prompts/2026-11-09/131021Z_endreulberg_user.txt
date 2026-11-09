@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T13:10:21Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Ah, but that means that we should have short-lived sessions. From last night i have not needed to provide the passkey again, it has remembered my login

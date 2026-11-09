@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T13:09:16Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Ok, just one thing, is the point that we monitor the giving of priviliges to an account, as the way to handle security. Meaning that no-one can do an attack without accessing a role, which first gives us a ping

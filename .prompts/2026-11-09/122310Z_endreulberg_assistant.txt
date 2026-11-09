@@ -1,0 +1,23 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:23:10Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The apply succeeded: 4 resources created. All three Global Admin PIM rules were set, and you're eligible for Global Admin.
+
+**Your turn: test an activation.** Sign in as `endre@adminazurestubble162simplel.onmicrosoft.com` and go to Entra → Identity Governance → Privileged Identity Management → My roles → Eligible assignments → Global Administrator → Activate. Check three things:
+- it asks for MFA (or accepts the MFA from your sign-in);
+- it requires a justification;
+- the duration can't be set above 1 hour.
+
+Your standing Global Admin is still in place, so you can activate it alongside without locking yourself out.
+
+**For the next PR, which removes the standing roles, there's a choice to make.** Those assignments were made by hand during bootstrap, so Pulumi doesn't know about them. I recommend:
+- **Removal:** a one-time GitHub workflow in the `dev` environment that runs a reviewed script. The script deletes exactly the listed assignments:
+  - the admin's Global Admin, Owner, Blob Data Contributor and Key Vault Crypto Officer;
+  - the owner account's Global Admin and Owner.
+  It runs only after your approval, as the apply identity, so nothing is done from a laptop.
+- **Keeping them gone:** a "standing access" check in the `access` stack. Every preview and apply would fail if anyone other than the break-glass accounts holds standing Global Admin or subscription Owner. That catches someone adding them back later.
+- **Break-glass Owner (D36):** today the break-glass accounts reach subscription Owner only by elevating their Global Admin to root User Access Administrator. I'd give them standing Owner on the subscription instead, so D36 is explicit and the check can verify it.
+
+Tell me once the activation works, and whether the recommended approach is fine. Then I'll build it.

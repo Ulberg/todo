@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:19:10Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I merged platform PR #3 and wrote the release flow into PLAN.md as v8, pushed to `main`. The flow is only in the plan for now: there's no app or cluster to release yet, so it gets built in Phase 4 and the new Phase 6b.
+
+**Release flow (D37, PLAN §2.1):**
+1. An app developer opens a PR in `todo`. The app lead approves it as code owner, and it merges to `main`.
+2. CI builds and signs the images. The pr-bot opens a platform PR with the new tags for dev. If only tags changed and the policy check passes, it merges automatically and ArgoCD deploys it to dev.
+3. When dev is healthy and the smoke tests pass, the pr-bot opens a release PR that copies exactly those tags to prod. **The app lead approves it, and merging it is the release.** Rolling back is a release PR with the previous tags.
+4. Platform leads still approve `platform.yaml` changes, any release PR that changes more than tags, and every `pulumi up`.
+5. To enforce this, the platform repo's `CODEOWNERS` gets path rules: dev tags have no owner, prod tags are owned by that app's leads, and everything else is owned by the platform leads. The `access` stack generates and checks it.
+
+I need to correct what I said earlier. Tag changes deploy through ArgoCD, not `pulumi up`, so an automatic dev deploy never waits on a platform lead. The gap I flagged doesn't exist.
+
+**Your two choices (D38):**
+- **Isolation:** prod gets its own AKS cluster, Postgres, VNet and Key Vault, in the same subscription. That raises the estimate to about USD 350/month.
+- **Timing:** prod is built in the new Phase 6b, right after Phase 6. Its first step is removing the solo-developer exception (D34), so every change to `main` gets a review before prod exists.
+
+**PR #3 apply:** its `pulumi up` is waiting for your approval in the `dev` environment. After it runs, activate Global Admin in Entra → PIM → My roles. It should ask for MFA and a justification and cap the activation at 1 h. Once you've confirmed that, I'll do the PR that removes the standing roles (D35/D36).

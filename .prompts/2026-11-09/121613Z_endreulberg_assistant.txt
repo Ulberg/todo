@@ -1,0 +1,33 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:16:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Not quite. Today's plan has no prod and no release step for the app lead. Here is what PLAN.md §2 currently describes:
+
+1. **Who may merge app code:** an app developer opens a PR in `todo`, the app's repo lead (code owner) approves it, and it merges to `main`.
+2. **Build:** app CI builds and signs the images and pushes them to ACR.
+3. **Request:** the pr-bot opens a PR on `platform` with the new image tags and the current `platform.yaml`.
+   - A change to image tags only that passes policy merges automatically.
+   - Any `platform.yaml` change needs a platform lead's approval.
+4. **Deploy:** `pulumi up` runs in the `dev` environment, which needs a platform lead's approval.
+
+So there are two differences from your picture:
+- **There's only one environment** (D7). `prod` is listed under "later" as a new Pulumi stack on the same code, and there's no release or promotion step.
+- **The approver at deploy time is a platform lead**, not the app lead. That also means a tag-only change merges automatically but the apply still waits for a platform lead, so the "automatic" path isn't automatic today. That gap should be fixed either way.
+
+If you want your model, it would look roughly like this:
+- `dev` deploys automatically when a tag-only PR merges.
+- A release is a promotion PR on `platform` that copies the tags tested in dev into the prod tag file.
+- The app lead is the code owner of that file. Their approval merges it, and a `prod` environment apply runs.
+- Platform leads would still own `platform.yaml` changes and anything that isn't a tag.
+
+This is a plan change (D7 and §2), so I'd write it into PLAN.md as a proposal for you to confirm rather than just doing it. Want me to?
+
+**Meanwhile, platform PR #3** (https://github.com/Ulberg/platform/pull/3) makes Global Admin PIM-only for platform leads: at most 1 h, with MFA and a justification. Nothing standing is removed yet.
+- All checks pass.
+- The preview shows exactly what's expected: 4 creates (3 policy rules and your Global Admin eligibility) and 22 unchanged.
+- The rules are set by a small Graph script that the stack runs on apply only. The Pulumi provider can't set PIM policies for directory roles. PLAN.md now says this.
+- It needs your review and merge, and then your approval of the `dev` apply. I won't do either.
+
+After the apply, test an activation: Entra → PIM → My roles → Global Admin. It should ask for MFA and a justification and cap the activation at 1 h. Once that works, I'll do the follow-up PR that removes the standing roles (D35/D36).

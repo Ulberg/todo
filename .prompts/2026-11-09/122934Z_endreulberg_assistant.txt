@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:29:34Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+That error is expected. PIM won't activate a role you already hold as a standing assignment, and your account still has its permanent Global Admin. Activating has nothing to add, so the test can't happen until that standing role is gone.
+
+**What you can check now:**
+1. **Policy:** PIM → **Microsoft Entra roles** → **Settings** → **Global Administrator**. It should show an activation maximum of 1 hour, MFA and justification required, and permanent eligibility allowed.
+2. **The activation flow itself:** activate **platform-admin** under **My roles** → **Groups**. You're eligible for it and don't hold it, so this is a real activation with the same MFA and justification steps, capped at 1 hour.
+
+**For the removal, I'd split it into two approved runs so you're never without a way back in:**
+1. **Run 1:** remove only your admin account's standing Global Admin. You then activate Global Admin through PIM, which is the real test. If it fails, the owner account and both break-glass accounts still have Global Admin.
+2. **Run 2, after the test works:**
+   - remove the admin's subscription Owner, Blob Data Contributor and Key Vault Crypto Officer;
+   - remove the owner account's Global Admin and Owner;
+   - give the break-glass accounts Owner on the subscription.
+
+The standing-access check then becomes a required part of the `access` stack.
+
+Shall I build it this way, with one PR for the workflow and check, run in these two steps?

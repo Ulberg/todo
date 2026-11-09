@@ -1,0 +1,26 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:10:21Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes. And you're right that it matters most for privilege: today PIM's MFA requirement is satisfied by the MFA you did when you signed in last night. So **activation doesn't actually ask for your passkey again**, and anyone holding your browser session could activate Global Admin.
+
+**Why your sign-in lasts so long:** with security defaults on and Conditional Access off, Entra uses its defaults. You stay signed in, and the session renews for up to about 90 days while you keep using it. Changing that needs Conditional Access. We have the licence for it; it's simply still off.
+
+**My proposal: add three policies to Conditional Access (Phase 0 step 1, which is next anyway):**
+
+| Policy | What it does |
+|---|---|
+| **CA05: Fresh passkey for every privileged activation** | A Conditional Access "authentication context" that requires phishing-resistant MFA **every time**. PIM's Global Admin, `platform-admin` and `platform-write` activations require that context. Every activation then asks for your passkey, however recent your sign-in. |
+| **CA06: Short sessions for admin tools** | Azure portal, CLI and ARM for infra developers: sign in again every **4 hours**, and no "stay signed in" browser session. |
+| **CA07: Sign-in frequency for infra and app developers** | Other apps: sign in again every **12 hours**, so a stolen session token is useful for a working day at most. |
+
+All of it is in code in the `access` stack, and the emergency accounts are excluded as before. Creating the authentication context needs another small Graph step, like the PIM policy.
+
+**Caveat:** CA05 does the real work. Sessions alone don't stop someone holding your session from activating; requiring a fresh passkey at activation does.
+
+To write this into PLAN.md and build it, I need:
+1. **Are the session lengths OK?** 4 h for admin tools and 12 h otherwise, or would you prefer something else?
+2. **An email address** for the activation alerts from my previous message.
+
+Step 2 (removing the remaining standing roles) is still waiting for your go-ahead. It doesn't depend on any of this.

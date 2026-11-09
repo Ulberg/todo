@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:34:05Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, this was a problem, and both fixes are in PR #4: https://github.com/Ulberg/platform/pull/4. All checks pass, and the preview shows 1 create and 3 deletes, as expected.
+
+**Why permanent active assignment matters:** with it allowed, an admin could still give someone Global Admin permanently, outside PIM. That defeats D35. Two new rules close it, matching what our group PIM policies already do:
+- direct active assignments must expire, after at most 15 days (the shortest PIM allows);
+- they need MFA and a justification.
+
+These rules only govern new assignments. The existing standing ones (your admin account, the owner account, break-glass) stay until the removal PR.
+
+**The 8 h problem:** it's possibly not just the parallel runs I suspected. Every other value on your screenshots is also Microsoft's default, so it's unclear whether any rule applied at all. Either way, the policy is now one step that sets the rules in order and reads each one back. If a rule doesn't stick, the apply fails with Graph's actual response, so this time we'll see the real cause rather than a false "set".
+
+**Next steps:**
+1. Tell me if I may merge #4. Your go-ahead for #3 doesn't carry over.
+2. After the merge, approve the `dev` apply.
+3. Check the settings again. Click **Global Administrator** in this list: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ResourceMenuBlade/~/roleSettings/resourceId//resourceType/tenant/provider/aadroles
+   - The **Activation** tab should show a maximum of 1 hour.
+   - On the **Assignment** tab, "Allow permanent active assignment" should be unchecked (15 days), and MFA should be required on active assignment.

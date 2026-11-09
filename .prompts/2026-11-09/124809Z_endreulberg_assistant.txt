@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:48:09Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PR #5 is ready: https://github.com/Ulberg/platform/pull/5. All checks pass, and the preview shows **2 creates (subscription Owner for breakglass1 and breakglass2)** and nothing else.
+
+**One change from what we agreed:** I moved giving the break-glass accounts Owner forward from step 2 into this PR's apply. Then Owner is already on the emergency accounts before any Owner is removed. It only adds access for the two offline emergency accounts and removes nothing.
+
+The removal runs as a one-time workflow. It needs your approval for each step, and it stops before changing anything if a safety check fails:
+- **Step 1:** removes only your admin account's standing Global Admin. Your owner account and both break-glass accounts keep theirs until you've activated it through PIM.
+- **Step 2:** removes the admin account's Owner, Blob Data Contributor and Key Vault Crypto Officer, and the owner account's Global Admin and Owner. It refuses to run unless the break-glass accounts are Owner and step 1 is done.
+
+**The sequence once you say "merge":**
+1. I merge, and you approve the apply (break-glass Owner): https://github.com/Ulberg/platform/actions/workflows/pulumi.yml
+2. I start step 1, and you approve it: https://github.com/Ulberg/platform/actions/workflows/remove-standing-access.yml
+3. You activate Global Admin here, which is the real test: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+
+Step 2 waits until you say so. A last small PR then adds the standing-access check and deletes the one-time workflow, and the basic setup is done.
+
+Shall I merge?

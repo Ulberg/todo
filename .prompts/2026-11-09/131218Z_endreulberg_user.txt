@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T13:12:18Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+1) Yes 2) Yes send it to the owner email of the workspace, or make a platform-lead email list that includes the owner and admin

@@ -1,0 +1,25 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:08:03Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes. Your admin account holds no Global Admin day to day. When you need it, you activate it in PIM for at most 1 hour, with MFA and a justification. It expires by itself, and every activation is recorded in the PIM audit log:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ResourceMenuBlade/~/Audit/resourceId//resourceType/tenant/provider/aadroles
+
+**What it's for:** tenant-level work that the stack can't do itself. Examples are turning security defaults off for the Conditional Access switch, granting Graph permissions to an identity, or fixing something in an emergency. Infra changes still go through PRs, `pulumi up` in CI and your approval.
+
+**Global Admin doesn't cover Azure resources.** It's an Entra role. Azure resources use separate roles:
+- **Right now:** your admin account still has standing subscription Owner and the two state roles. Step 2 removes those.
+- **After step 2:** you'll have **Reader** on the subscription day to day, through `platform-read`. Higher access comes through the PIM groups:
+  - `platform-write`, at most 2 hours;
+  - `platform-admin`, at most 1 hour.
+  Those groups get their Azure write roles in Phase 3, when there are resources to write to.
+- **Subscription Owner** belongs only to the two break-glass accounts.
+
+There's one escape hatch. While Global Admin is active, it can grant itself User Access Administrator over all subscriptions ("elevate access"). That's normal for Global Admin and is logged. It's another reason to keep Global Admin to short, justified activations.
+
+**Next is step 2:**
+- it removes your admin account's Owner, Blob Data Contributor and Key Vault Crypto Officer;
+- it removes your owner account's Global Admin and Owner.
+
+The owner account keeps only billing. Shall I start it?

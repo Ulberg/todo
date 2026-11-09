@@ -146,6 +146,8 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D36 | Subscription **Owner only via the break-glass accounts**. `platform-admin` (PIM, 1 h) gets no Owner | msg 2026-11-09 |
 | D37 | **Release flow** (§2.1). A PR approved by the app lead merges to app `main`; tag-only changes auto-deploy to `dev`; a release PR copies the dev tags to `prod`, and **the app lead approves it** | msg 2026-11-09 |
 | D38 | **`prod` gets its own AKS cluster, Postgres, VNet and Key Vault** (own resource groups, same subscription). It is built after Phase 6, once the solo-dev exception (D34) is gone | msg 2026-11-09 |
+| D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
+| D40 | **Privilege alerts**: PIM emails every activation and every new assignment of Global Admin, `platform-write` and `platform-admin` to the platform alert list (GitHub secret `PLATFORM_ALERT_EMAILS`, kept out of the public repos). Log-based alerts (break-glass sign-ins, role changes not made by the apply identity, PIM/CA policy changes) come with Phase 5 | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -250,11 +252,16 @@ Each grant is a set of independent bits on one todo for one email, just like `rw
 | Entra admin roles (Global Admin, Privileged Role Admin, Application Admin) | **PIM eligible, no permanent assignments** | Platform leads | Max 1 h, phishing-resistant MFA, justification |
 | Emergency access | 2 cloud-only accounts, FIDO2, stored offline | You | Excluded from Conditional Access; any sign-in alerts all leads |
 
-**Conditional Access** (replaces security defaults):
-- MFA for everyone in the workforce tenant;
-- phishing-resistant MFA for Azure management and for activating PIM roles;
-- block legacy authentication;
-- sign-in risk policies (Identity Protection, a P2 feature) for infra developers.
+**Conditional Access** (replaces security defaults; the emergency accounts are excluded from every policy):
+- CA01: MFA for everyone in the workforce tenant;
+- CA02: block legacy authentication;
+- CA03: phishing-resistant MFA for Azure management;
+- CA04: sign-in risk policies (Identity Protection, a P2 feature) for infra developers;
+- CA05: a fresh phishing-resistant sign-in for **every** PIM activation. An authentication context with sign-in frequency "every time", which the PIM policies of Global Admin, `platform-write` and `platform-admin` require. Without it, PIM accepts the MFA from an hours-old sign-in (D39);
+- CA06: Azure portal, CLI and ARM for infra developers: sign in again every 4 h, no persistent browser session (D39);
+- CA07: every other app for infra and app developers: sign in again every 12 h (D39).
+
+**Alerts** (D40): PIM emails every activation and every new eligible or active assignment of a privileged role to the platform alert list. Until Phase 5 that is the only alert; Phase 5 adds the log-based ones.
 
 **Why this matters.** Normal writes still go only through approved PR → CI (D18). PIM covers the moments when CI or ArgoCD itself is broken, and it makes even those moments time-boxed, justified and visible.
 
@@ -317,8 +324,8 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - Azure bootstrap checklist + script (§4). Pulumi "bootstrap" stack (F#): state storage, CI identity, `access/people.yaml` → Entra groups, PIM eligibility + policies, Conditional Access, GitHub rulesets, CODEOWNERS.
 - **Done when** both repos are protected by rules defined in code, and the CI identity can run `pulumi preview`.
 - Status (2026-11-09): bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Two steps left, each its own PR:
-  1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy.
-  2. **Remove standing admin access.** In this order: make the admin account eligible for Global Admin (max 1 h, MFA + justification; the `azuread` provider can't set directory-role PIM policies (§7), so the stack runs a small Graph script as a Pulumi `Command`, on apply only; platform PR #3); you test an activation; then remove the standing assignments. Decided 2026-11-09 (D35, D36): the admin loses its standing Global Admin, subscription Owner and the two bootstrap roles on the state account and vault; the owner Microsoft account loses Global Admin and subscription Owner entirely (billing stays with its billing role); subscription Owner is reachable **only through the break-glass accounts**.
+  1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy. This step also adds CA05–CA07 (short sessions and a fresh passkey for every PIM activation, D39).
+  2. **Remove standing admin access.** In this order: make the admin account eligible for Global Admin (max 1 h, MFA + justification; the `azuread` provider can't set directory-role PIM policies (§7), so the stack runs a small Graph script as a Pulumi `Command`, on apply only; platform PRs #3–#5, step 1 of the removal done and the activation tested; plus PIM alert emails, D40); you test an activation; then remove the standing assignments. Decided 2026-11-09 (D35, D36): the admin loses its standing Global Admin, subscription Owner and the two bootstrap roles on the state account and vault; the owner Microsoft account loses Global Admin and subscription Owner entirely (billing stays with its billing role); subscription Owner is reachable **only through the break-glass accounts**.
 
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
 - F# Oxpecker (.NET 10): `/health/live`, `/health/ready`, `/version`.
@@ -349,6 +356,7 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - OTel Collector → Loki / Prometheus / Tempo (Blob) → Grafana (Entra SSO, two orgs, tenants).
 - Infra signals: kube-state-metrics, node metrics, AKS audit logs, Postgres metrics/logs, Envoy access logs, ArgoCD.
 - Dashboards + alerts as code; `mcp-grafana` setup documented for both groups.
+- Entra sign-in and audit logs → alerts (D40): any emergency-account sign-in, role or group-membership changes not made by the apply identity, changes to PIM policies or Conditional Access.
 - **Done when** each group's Claude sees exactly its column of §5.1, proven by tests.
 
 ### Phase 6: Edge + application security

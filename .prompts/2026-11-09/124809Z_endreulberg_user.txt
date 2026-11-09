@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T12:48:09Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+It works!  1) Do it! 2) Yes, that comes after. But then we have the basic setup

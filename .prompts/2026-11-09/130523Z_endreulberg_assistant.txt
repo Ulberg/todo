@@ -1,0 +1,18 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:05:23Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, one thing: step 1 has run and worked.
+- Both safety checks passed (both break-glass accounts still hold Global Admin, and you're eligible through PIM).
+- Your admin account's standing Global Admin is removed.
+- Global Admin is now held only by your owner account and the two break-glass accounts.
+
+**Your turn: activate Global Admin through PIM.** Sign in as `endre@adminazurestubble162simplel.onmicrosoft.com`:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+
+On **Eligible assignments** → **Global Administrator** → **Activate**, it should require MFA and a justification and allow at most 1 hour.
+
+If the portal still acts as if you're Global Admin, or the activation doesn't show up, sign out and back in. The old role stays in your session token until it refreshes.
+
+Tell me when the activation works, and I'll start step 2 for you to approve.

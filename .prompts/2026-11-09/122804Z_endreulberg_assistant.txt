@@ -1,0 +1,14 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T12:28:04Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+That banner is about Microsoft Entra ID Governance, a separate add-on licence. It covers access reviews, entitlement management and lifecycle workflows, and we don't use any of those. PIM is part of your Entra ID P2 licence, and the tenant has it: the apply could only create the eligibility and the PIM-for-Groups policies because P2 is there. You can ignore the banner. It shows on the Identity Governance landing page regardless.
+
+**To reach PIM directly:**
+- Link: https://portal.azure.com/#view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+- Or search the portal's top bar for **Privileged Identity Management** and open **My roles** → **Microsoft Entra roles**. In entra.microsoft.com it's **ID Governance → Privileged Identity Management → My roles**.
+
+On the **Eligible assignments** tab you should see **Global Administrator** with an **Activate** link. Check the same three things as before: MFA, a required justification, and a duration of at most 1 hour.
+
+If Global Administrator isn't listed there, tell me what you do see and I'll check the eligibility from the apply.

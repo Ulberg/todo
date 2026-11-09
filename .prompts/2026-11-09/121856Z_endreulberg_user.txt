@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T12:18:56Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I want you to implement it as described by me, the changes you proposed sounds fine.

@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T13:13:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Just to clarify now it would be such that everyone has to login again every 12 hours regardless, 4 for infra, and when giving yourself escalted priviliges you also need to use your passkey like with regular login

@@ -1,0 +1,13 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T01:05:06Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've recorded both decisions in PLAN.md and pushed the change:
+
+- **D35:** your owner Microsoft account keeps only its billing role. Its Global Admin and subscription Owner are removed entirely, not left as eligible.
+- **D36:** subscription Owner is reachable only through the break-glass accounts. `platform-admin` won't get it.
+
+**Next time,** we start with the "remove standing admin access" PR. It makes the admin account eligible for Global Admin (max 1 h), you test an activation, and only then are the standing roles on both accounts removed. After that comes switching Conditional Access on.
+
+The new ruleset is working: GitHub reported that this push to `main` broke three rules (no PR, missing checks, unsigned commit) and let it through only because of your admin bypass (D34).

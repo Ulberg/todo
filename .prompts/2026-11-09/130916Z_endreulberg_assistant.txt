@@ -1,0 +1,30 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:09:16Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Partly. Monitoring is the second layer. The main point is that **a stolen account isn't worth much on its own**:
+
+**1. Prevention, which is the main layer.** Day to day nobody holds a powerful role, so a stolen password or session gets an attacker Reader at most. To get more, they also need:
+- your MFA at activation time (phishing-resistant MFA comes with Conditional Access, Phase 0 step 1);
+- and a justification;
+- and the access expires within 1 hour.
+
+Infra changes also need a PR plus your approval in GitHub, a second system with its own sign-in.
+
+**2. Detection, the "ping" you mean.** Because privilege has to be activated, every escalation is a single, rare, logged event. That makes it easy to alert on: "Global Admin activated at 03:00" stands out in a way that a standing admin quietly using their rights never would. It only helps if someone actually gets pinged, though, and **today nobody does**:
+- PIM's default activation emails go to admins' mailboxes. Your admin and break-glass accounts have no mailbox.
+- Nothing watches the sign-in or audit logs yet.
+
+**What a ping wouldn't catch.** Some paths don't go through a role activation:
+- **The CI apply identity holds powerful permissions permanently**, including the right to assign directory roles. What guards it is the GitHub environment approval, not PIM. So we should also alert on role changes made outside an approved apply.
+- **Break-glass sign-ins** are rare and powerful, so any use of them should alert.
+- **App-level and supply-chain attacks** are covered by other measures (deny by default, policy checks, signed images), not by role monitoring.
+
+**My proposal:**
+- **Now, in the `access` stack, at no cost:** set the PIM notification rules so every Global Admin, `platform-write` and `platform-admin` activation emails a real address you read.
+- **In Phase 5 (observability):** send the Entra sign-in and audit logs to the monitoring stack, with alerts for break-glass sign-ins, role assignments not made by the apply identity, and changes to PIM policies or Conditional Access.
+
+Shall I add both to PLAN.md and build the notifications next? If so, which address should the alerts go to?
+
+Step 2 doesn't depend on this, so I can start it whenever you say.

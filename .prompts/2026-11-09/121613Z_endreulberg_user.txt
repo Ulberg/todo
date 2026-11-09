@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T12:16:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Just to check, the release process will be that any app dev can make a PR, the app lead can approve it which allows it to be merged to main. Then there is opened a release that can be approved by the app lead which takes it from dev to prod?
