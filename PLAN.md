@@ -336,9 +336,9 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - ✅ **Azure** (D41, platform PRs #13–#15): agent account per developer, read roles only, P2 by group, smoke test + nightly check.
 - **Tenant lockdown** (D42, platform PR #16): members can't create anything on their own; the nightly check verifies it after the apply.
 - **GitHub organization** (D43), in this order, so CI never loses access:
-  1. You create the organization (Free) and transfer the three GitHub Apps (`ulberg-platform-admin`, `-reader`, `-pr-bot`) to it; they are private, so they can only be installed on their owner.
+  1. You create the organization (Free).
   2. Platform PR: the `access` stack targets the org: org settings (2FA required, base permission none, members can't create repos, fine-grained tokens need approval and expire, classic tokens off), teams from `people.yaml` (leads, infra developers, app developers) with repo access per team, `CODEOWNERS` naming teams, environment reviewers as teams. Federated credentials for the new OIDC subjects (org ID) are added *next to* the old ones.
-  3. You transfer `platform` and `todo` to the org (rulesets, environments and secrets move with them; old URLs redirect). An apply verifies everything; then the old federated credentials are removed.
+  3. You transfer `platform` and `todo` to the org (rulesets, environments and secrets move with them; old URLs redirect), then right after the three GitHub Apps (`ulberg-platform-admin`, `-reader`, `-pr-bot`): they are private, so they can only be installed on their owner, and you install them on the org. CI's GitHub-token steps fail for those few minutes. An apply verifies everything; then the old federated credentials are removed.
   4. The org-owned **Claude app** (contents + pull requests, device flow, no private key on anyone's laptop), installed on both repos, plus `scripts/claude-github-login.sh` (device flow → a separate `gh` profile) and the hook's GitHub part (`gh` and `git push` only with Claude's profile). Test: Claude opens a PR that shows "<you> via Claude"; you approve and merge.
 - **Done when** Claude reads Azure and opens GitHub PRs only with its own, attributed, read-only/PR-only identity, and every agent permission is defined in code and checked nightly.
 
