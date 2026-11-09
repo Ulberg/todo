@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v6. All design questions are answered.** The only thing left is your sign-off on the phase order (§10); Phase 0 execution starts after that.
+> **Status: v7. Phase 0 in progress** (bootstrap done; the `access` Pulumi stack is in review as a platform PR).
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -80,7 +80,7 @@ Pulumi (F#) turns this into:
 - Entra security groups + memberships (workforce tenant), which feed the Azure RBAC, AKS RBAC, Postgres and Grafana org mappings.
 - GitHub (Pulumi GitHub provider):
   - repository settings and branch rulesets: PR required, code-owner review required, signed commits, no force push, status checks required;
-  - a generated `CODEOWNERS` file in each repo (`* @<leads>`);
+  - a `CODEOWNERS` file in each repo (`* @<leads>`). It is committed by hand and Pulumi fails the run if it doesn't match `people.yaml`, because a bot pushing it to `main` would need a ruleset bypass;
   - collaborator permissions (leads get `maintain`, other developers get `write`, no one gets `admin` except the bootstrap owner).
 - Changing who is a lead or an infra developer is a PR to `platform/access/` that needs a platform lead's approval.
 
@@ -295,6 +295,9 @@ Savings levers: stop AKS + Postgres between demos. Trade-off kept: no managed WA
 - `.editorconfig`, Fantomas, Prettier/ESLint (all enforced in CI only, no git hooks), Claude Code prompt-capture hooks, gitleaks + Dependabot.
 - Azure bootstrap checklist + script (§4). Pulumi "bootstrap" stack (F#): state storage, CI identity, `access/people.yaml` → Entra groups, PIM eligibility + policies, Conditional Access, GitHub rulesets, CODEOWNERS.
 - **Done when** both repos are protected by rules defined in code, and the CI identity can run `pulumi preview`.
+- Status (2026-11-09): bootstrap done; `platform/stacks/access` written (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Two steps left, each its own PR:
+  1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy.
+  2. **Entra admin roles to PIM.** Global Admin etc. become eligible (max 1 h) for platform leads and your standing assignment is removed; also the admin's standing bootstrap roles on the state account and vault. The `azuread` provider can't set directory-role PIM policies, so that part is a CI script calling Graph (§7).
 
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
 - F# Oxpecker (.NET 10): `/health/live`, `/health/ready`, `/version`.
