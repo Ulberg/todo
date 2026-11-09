@@ -58,7 +58,7 @@ Flow:
    - **Any `platform.yaml` change → approval from a platform lead.**
    - How it's enforced: in the generated `CODEOWNERS`, the deploy-tag files have no owner and everything else is owned by the platform leads. The ruleset requires code-owner review + the policy check, with 0 general approvals. No app gets a ruleset bypass.
    - GitHub Apps: `ulberg-platform-admin` (apply job only, `dev` environment), `ulberg-platform-reader` (PR previews, read-only), `ulberg-platform-pr-bot` (todo `main` → PRs on platform).
-4. **Platform CI runs `pulumi up` only after approval.** The apply job runs in a GitHub **Environment** (`dev`) whose required reviewers are the platform leads. The Azure federated credential trusts *only* `repo:Ulberg/platform:environment:dev`, so a workflow without that approval can't even get an Azure token. (This is the reference-infra OIDC pattern, scoped tighter.) ArgoCD syncs the platform repo into the cluster. Nobody applies from a laptop.
+4. **Platform CI runs `pulumi up` only after approval.** The apply job runs in a GitHub **Environment** (`dev`) whose required reviewers are the platform leads. The Azure federated credential trusts *only* `repo:Ulberg@<owner-id>/platform@<repo-id>:environment:dev` (GitHub's subject carries immutable IDs, so a renamed or recreated repo doesn't match), so a workflow without that approval can't even get an Azure token. PR previews use a separate read-only identity. (This is the reference-infra OIDC pattern, scoped tighter.) ArgoCD syncs the platform repo into the cluster. Nobody applies from a laptop.
 
 ### 2.2 Access defined as code (IaC)
 
