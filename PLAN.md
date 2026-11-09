@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v9. Phase 0 done (2026-11-09); Phase 1 next.** v9 adds the agent identity for Claude (D41).
+> **Status: v9. Phase 0 done (2026-11-09).** Before Phase 1: Claude's own read-only agent identity (D41, platform PR in review). Then Phase 1.
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -148,7 +148,7 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D38 | **`prod` gets its own AKS cluster, Postgres, VNet and Key Vault** (own resource groups, same subscription). It is built after Phase 6, once the solo-dev exception (D34) is gone | msg 2026-11-09 |
 | D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers and guests sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
 | D40 | **Privilege alerts**: PIM emails every activation and every new assignment of Global Admin, `platform-write` and `platform-admin` to the platform alert list (GitHub secret `PLATFORM_ALERT_EMAILS`, kept out of the public repos). Log-based alerts (break-glass sign-ins, role changes not made by the apply identity, PIM/CA policy changes) come with Phase 5 | msg 2026-11-09 |
-| D41 | **Claude gets its own read-only identity**, not the developer's: one agent account per developer in `people.yaml`, in a `platform-agents` group with read roles only (Reader, Log Analytics Reader, Monitoring Reader, AKS RBAC Reader, Entra Reports Reader, Cost Management Reader), never PIM-eligible and covered by the standing-access check. The developer signs it in (own passkey, separate `AZURE_CONFIG_DIR`/kubeconfig), so no secrets on disk and audit logs separate human from agent. First step of Phase 3 | msg 2026-11-09 |
+| D41 | **Claude gets its own read-only identity**, not the developer's: a separate Entra user per developer (`agents` in `people.yaml`, infra developers only for now), linked to its person (manager = the person, employee type `Agent`, "Claude agent of <name> (<handle>)"). In `platform-agents`: Reader, Monitoring Reader, Log Analytics Reader, Cost Management Reader on the subscription, Entra Security Reader; AKS RBAC Reader comes with Phase 3. Never PIM-eligible; standing-access check covers it. Entra ID P2 licence, the same Conditional Access as humans (passkey, 4 h Azure tools, 12 h otherwise). The developer signs it in (own passkey, separate `az` profile), so no secrets on disk and audit logs separate human from agent. A Claude Code hook blocks `az` without the agent profile. Done before Phase 1 (moved up from Phase 3 at your request) | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -344,7 +344,7 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - **Done when** `make up` brings the full stack up locally and the Phase 1 app deploys via ArgoCD.
 
 ### Phase 3: Azure foundation (Pulumi F#, applied only by CI after approval)
-- First: agent identities for Claude (D41), before Claude reads any real infrastructure.
+- Agents (D41) get AKS RBAC Reader and the DB read-only role as those resources appear.
 - Workforce groups, External ID app registrations, workload identities.
 - VNet + subnets + NSGs, private DNS, ACR, Key Vault, AKS (Entra RBAC, no local accounts, workload identity, Azure CNI overlay + Cilium), Postgres Flexible (private access, Entra-only auth with migrator/app/read-only identities).
 - Pulumi unit tests (mocks); `preview` on every PR, `up` after approval.

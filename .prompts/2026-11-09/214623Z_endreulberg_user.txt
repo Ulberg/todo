@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T21:46:23Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Ok, this seems like the right time ot make it so that Claude as indepdent access to Azure withuot using my az command line

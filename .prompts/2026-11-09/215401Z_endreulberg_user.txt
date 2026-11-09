@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T21:54:01Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Just to check, you make the agent a fully seperate user, or do you make it piggyback on the access of a given person. Because i guess for telemetry and access control we should make it so that it is "Ulbergs Claude agent" so attach it as a part of each person?

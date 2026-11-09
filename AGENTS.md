@@ -42,7 +42,27 @@ In practice, a change is not done until:
 
 - `PLAN.md` is the source of truth for order of work. Do not start a step that is not agreed in `PLAN.md`. Propose changes to the plan instead of silently deviating.
 - Ask before making unusual or hard-to-reverse choices. The project owner does not want to be surprised by awkward choices.
-- Access is defined as code in the platform repo (`access/people.yaml`). Only infra developers (and their agents) may work on infrastructure, and even they only change it through approved PRs applied by CI. An agent run by an app developer only uses app logs, metrics and traces. It must not try to access Azure, Kubernetes or the database.
+- Access is defined as code in the platform repo (`access/people.yaml`). Only infra developers (and their agents, with their own read-only identity, §4) may work on infrastructure, and even they only change it through approved PRs applied by CI. An agent run by an app developer only uses app logs, metrics and traces. It must not try to access Azure, Kubernetes or the database.
 - `reference/` is a read-only example of the architectural patterns (Oxpecker, parse-don't-validate, DTO → domain → DBO, permissions resolved from the JWT email). `reference-infra/` is a read-only example of infrastructure patterns. Copy patterns, not code or business logic. Both folders contain third-party company material: they are git-ignored, must never be committed or pushed, and must never be quoted in `.prompts/`.
 - **F# code follows [`docs/fsharp-style.md`](docs/fsharp-style.md)**, in every file: input → domain → action → report, no mutation, no `null`, parse-don't-validate. CI enforces what it can.
 - No git pre-commit hooks. Every check (format, lint, tests, secret scanning) runs in CI.
+
+## 4. Claude's Azure identity (D41)
+
+Claude never uses your `az` login. Each infra developer's Claude has its own Entra account, `<name>-agent@<tenant>`, displayed as "Claude agent of <name> (<GitHub handle>)", with you as its manager and employee type `Agent` (`agents` in the platform repo's `access/people.yaml`). It is in the `platform-agents` group:
+
+- **Azure (subscription):** Reader, Monitoring Reader, Log Analytics Reader, Cost Management Reader. **Entra:** Security Reader (sign-in and audit logs, Conditional Access). Nothing that writes, and no data-plane access to the Pulumi state or Key Vault.
+- Never PIM-eligible, so your activations never give Claude more rights. The nightly standing-access check covers it.
+- The same Conditional Access as you: a passkey, a fresh sign-in every 4 h for Azure tools and every 12 h otherwise.
+- Its sign-ins and actions are logged under its own name, so "you did X" and "your Claude did X" stay distinguishable.
+- `.claude/hooks/agent_identity.py` blocks `az` unless Claude Code runs with the agent's profile, and blocks commands that mention `AZURE_CONFIG_DIR`. It is a guardrail against mistakes; the agent's read-only roles are the real limit.
+
+One-time setup, after the platform apply has created the account (direct links are in the platform PR that adds you to `agents`):
+
+1. Assign the account an **Entra ID P2** licence.
+2. Create a **Temporary Access Pass** for it.
+3. In a private browser window, sign in as the agent at <https://aka.ms/mysecurityinfo> with the pass and **add a passkey**.
+4. In your own terminal (not through Claude): `AZURE_CONFIG_DIR=~/.azure-agent az login --tenant <tenant-id>`, and sign in as the agent with its passkey.
+5. Add `"env": {"AZURE_CONFIG_DIR": "<your home>/.azure-agent"}` to `~/.claude/settings.json` and restart Claude Code.
+
+When Claude reports that the agent's session expired, repeat step 4.
