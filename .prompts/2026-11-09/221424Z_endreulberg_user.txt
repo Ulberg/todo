@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:14:24Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+It seems like I have P2, but I could not assign it from that UI. But could you not just attach the P2 via IaC to the groups? [Image #7]

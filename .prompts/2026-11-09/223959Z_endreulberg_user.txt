@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:39:59Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Wait, Is there no simple way to give a agent partial access to your account, like a dependabot type deal? Neither of those options seems ok to be honest

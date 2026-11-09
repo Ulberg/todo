@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v9. Phase 0 done (2026-11-09).** Before Phase 1: Claude's own read-only agent identity (D41, platform PR in review). Then Phase 1.
+> **Status: v10. Phase 0 done (2026-11-09).** Before Phase 1, "Phase 0b: agent identities": Claude's Azure identity is done (D41); tenant lockdown (D42) in review; next the GitHub organization and the Claude app (D43). Then Phase 1.
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -149,6 +149,8 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers and guests sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
 | D40 | **Privilege alerts**: PIM emails every activation and every new assignment of Global Admin, `platform-write` and `platform-admin` to the platform alert list (GitHub secret `PLATFORM_ALERT_EMAILS`, kept out of the public repos). Log-based alerts (break-glass sign-ins, role changes not made by the apply identity, PIM/CA policy changes) come with Phase 5 | msg 2026-11-09 |
 | D41 | **Claude gets its own read-only identity**, not the developer's: a separate Entra user per developer (`agents` in `people.yaml`, infra developers only for now), linked to its person (manager = the person, employee type `Agent`, "Claude agent of <name> (<handle>)"). In `platform-agents`: Reader, Monitoring Reader, Log Analytics Reader, Cost Management Reader on the subscription, Entra Security Reader; AKS RBAC Reader comes with Phase 3. Never PIM-eligible; standing-access check covers it. Entra ID P2 licence, the same Conditional Access as humans (passkey, 4 h Azure tools, 12 h otherwise). The developer signs it in (own passkey, separate `az` profile), so no secrets on disk and audit logs separate human from agent. A Claude Code hook blocks `az` without the agent profile. Done before Phase 1 (moved up from Phase 3 at your request) | msg 2026-11-09 |
+| D42 | **Members can't create anything on their own** in Entra (security groups, apps, tenants, app consent, guest invites, sign-ups), humans and agents alike: tenant authorization policy in the `access` stack. Found by the agent smoke test | msg 2026-11-09 |
+| D43 | **Move both repos into a GitHub organization (Free plan)**, so access scales: teams from `people.yaml`, org policies (2FA, token rules, no self-created repos), central audit log, and **one org-owned "Claude" GitHub App** that every developer's Claude uses *on that developer's behalf* (user-to-server token via device flow, 8 h, permissions = app ∩ developer: contents + pull requests only; never workflows, settings, approvals or merges). Commits and PRs show as "<developer> via Claude". Owner bypass (D34) stays. GitHub accounts provisioned from Entra (Enterprise Managed Users) are the documented upgrade path, not built (§13) | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -330,6 +332,16 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
   1. ✅ **Conditional Access on** (done 2026-11-09, platform PRs #9–#12). CA01–CA09 enforced; security defaults off. PIM activation of Global Admin, `platform-write` and `platform-admin` requires authentication context `c1` (CA05: fresh phishing-resistant sign-in), set by `pim-policy-rules.sh` because the `azuread` provider can't switch a group policy from MFA to a context (Entra refuses both at once). Every rule is read back on apply.
   2. ✅ **Remove standing admin access** (done 2026-11-09, platform PRs #3–#8). Global Admin is PIM-only (1 h, MFA, justification; no permanent active assignment) and was tested; the admin account has Reader day to day; the owner Microsoft account keeps only billing (D35); subscription Owner is held only by the two emergency accounts (D36); every activation and new assignment emails the alert list (D40). `check_standing_access.sh` fails the `pulumi preview` check (every PR, main and nightly) if standing Global Admin, Privileged Role Administrator, Owner or User Access Administrator appears outside PIM and the emergency accounts.
 
+### Phase 0b: Agent identities (Claude acts as itself, on behalf of a developer)
+- ✅ **Azure** (D41, platform PRs #13–#15): agent account per developer, read roles only, P2 by group, smoke test + nightly check.
+- **Tenant lockdown** (D42, platform PR #16): members can't create anything on their own; the nightly check verifies it after the apply.
+- **GitHub organization** (D43), in this order, so CI never loses access:
+  1. You create the organization (Free) and transfer the three GitHub Apps (`ulberg-platform-admin`, `-reader`, `-pr-bot`) to it; they are private, so they can only be installed on their owner.
+  2. Platform PR: the `access` stack targets the org: org settings (2FA required, base permission none, members can't create repos, fine-grained tokens need approval and expire, classic tokens off), teams from `people.yaml` (leads, infra developers, app developers) with repo access per team, `CODEOWNERS` naming teams, environment reviewers as teams. Federated credentials for the new OIDC subjects (org ID) are added *next to* the old ones.
+  3. You transfer `platform` and `todo` to the org (rulesets, environments and secrets move with them; old URLs redirect). An apply verifies everything; then the old federated credentials are removed.
+  4. The org-owned **Claude app** (contents + pull requests, device flow, no private key on anyone's laptop), installed on both repos, plus `scripts/claude-github-login.sh` (device flow → a separate `gh` profile) and the hook's GitHub part (`gh` and `git push` only with Claude's profile). Test: Claude opens a PR that shows "<you> via Claude"; you approve and merge.
+- **Done when** Claude reads Azure and opens GitHub PRs only with its own, attributed, read-only/PR-only identity, and every agent permission is defined in code and checked nightly.
+
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
 - F# Oxpecker (.NET 10): `/health/live`, `/health/ready`, `/version`.
 - OpenTelemetry traces/metrics/logs over OTLP; JSON logs carrying `trace_id`; `ProblemDetails` errors that include `trace_id`; no PII (hashed user id).
@@ -430,6 +442,7 @@ Tests: unit + property (domain), Testcontainers (storage), in-process API tests,
 
 ## 13. Future work
 
+- **GitHub Enterprise Managed Users** (upgrade path for D43): GitHub accounts created and removed from Entra (SSO + SCIM), so people and their agents get GitHub access from `people.yaml` with no separate sign-up, and Conditional Access covers GitHub too. About USD 21/user/month; worth it once there is a real team.
 - Postgres row-level security as defense in depth (D16).
 - `pgaudit` + column-level grants (§9.2 option C).
 - "Leave a share": a grantee drops their own access (D27).

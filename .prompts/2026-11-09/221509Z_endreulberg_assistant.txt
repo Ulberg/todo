@@ -1,0 +1,19 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T22:15:09Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Both are ready:
+- **PR #14, regression tests:** https://github.com/Ulberg/platform/pull/14. Its new check ran against the real tenant and **passed**: `endre-agent` holds exactly its read roles, has no PIM eligibility, and is only in `platform-agents`. No infrastructure changes.
+- **PR #15, licences by group:** https://github.com/Ulberg/platform/pull/15. The preview shows exactly 2 creates (the licence steps for `infra-developers` and `platform-agents`).
+
+Say "merge" and I'll merge both: #14 first, then #15. Approve #15's apply. That replaces step 1 of the setup: you **don't** need to assign the licence by hand.
+
+Then the remaining setup, as the admin with Global Admin active:
+1. **Temporary Access Pass:** find `endre-agent` in the user list → **Authentication methods** → **Add authentication method** → **Temporary Access Pass**:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers
+2. **Passkey:** in a private window, sign in as `endre-agent@adminazurestubble162simplel.onmicrosoft.com` at https://aka.ms/mysecurityinfo with the pass → **Add sign-in method** → **Passkey**.
+3. **Terminal (your own):** run the login command from AGENTS.md §4, using tenant `e17ac17e-d8cd-4280-a4e5-94ad2bb85549`, and sign in as `endre-agent`.
+4. **Claude Code:** add the setting from AGENTS.md §4 to `~/.claude/settings.json` and restart Claude Code.
+
+After the restart I'll run the smoke test as the agent.

@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T21:59:29Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The PR #14 checks that don't need Azure pass (hook tests, build, secret scan). Its `pulumi preview` is **queued** behind PR #13's apply, which is still waiting for your approval. Only one Pulumi run can touch the state at a time.
+
+**Your next steps:**
+1. **Approve the apply** that creates the agent: https://github.com/Ulberg/platform/actions/runs/42707700765
+2. **Do the one-time setup** (activate Global Admin first; it asks for your passkey):
+   1. **Licence:** open `endre-agent` → **Licenses** → **Assignments** → Entra ID P2. If none is free, buy one first.
+      - Users: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_UsersAndTenants/UserManagementMenuBlade/~/AllUsers
+      - Buy licences: https://admin.microsoft.com/#/catalog
+   2. **Temporary Access Pass:** same user → **Authentication methods** → **Add authentication method** → **Temporary Access Pass**.
+   3. **Passkey:** in a private window, sign in as `endre-agent@adminazurestubble162simplel.onmicrosoft.com` at https://aka.ms/mysecurityinfo with the pass → **Add sign-in method** → **Passkey**.
+   4. **In your own terminal:** run the login command from AGENTS.md §4, using tenant `e17ac17e-d8cd-4280-a4e5-94ad2bb85549`, and sign in as `endre-agent`.
+   5. **Claude Code:** add the setting from AGENTS.md §4 to `~/.claude/settings.json` and restart Claude Code.
+
+After the restart, I'll run `scripts/agent-smoke-test.sh` as the agent. That's the manual test: reads must work, writes must be refused. PR #14's CI check will then also confirm, against the real tenant, that the agent holds exactly its read roles.
+
+**One thing the smoke test may flag:** by default, Entra lets *every* member create security groups and register apps. If "create an Entra group" isn't refused, that's a tenant-wide default to lock down (for humans too), not an agent bug. If it comes up, I'll suggest how to fix it in code.

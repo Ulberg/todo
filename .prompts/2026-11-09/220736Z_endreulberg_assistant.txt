@@ -1,0 +1,19 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T22:07:36Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, buying licences in admin.microsoft.com needs Global Admin (or Billing Administrator), and your admin account no longer holds either standing. First check whether you need to buy anything at all, though: an **Entra ID P2 trial comes with 25 licences**, and you might have free ones already.
+
+1. **Activate Global Admin** (asks for your passkey, max 1 h):
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+2. **Check for free licences.** Open the list below and see whether Microsoft Entra ID P2 shows more "Total" than "Assigned":
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/LicensesMenuBlade/~/Products
+   - **Licences free:** skip buying and go straight to assigning it to `endre-agent`.
+   - **None free:** continue with step 3.
+3. **Add one licence** to your existing P2 subscription. Signed in as the admin account, open Your products and click the Entra ID P2 entry → **Buy licences** (+1):
+   https://admin.microsoft.com/#/subscriptions
+
+   That's simpler than the catalog link I gave earlier, which buys a new product. It uses the payment method already on file for that subscription.
+
+If admin.microsoft.com asks you to sign in, use the admin account (`endre@…onmicrosoft.com`), not your owner account. The owner now has billing in Azure only, no role in this tenant.

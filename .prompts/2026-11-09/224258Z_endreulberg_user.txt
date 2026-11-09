@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:42:58Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+BUt then it seems like we should move to a Github org anyways then right? Setting up GH accounts from Entra is a bit too advanced for this showcase. But it is a upgrade path that is available.

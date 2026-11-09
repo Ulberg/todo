@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:31:57Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I think we should make it so that claude should not be able to create anything, so yes, we would need to lock it down either by global settings in our Azure or by explicitly setting it to off in the IaC. And we should probably complete the same setup for GH right after, since then we can keep moving with agentic coding and dogfood our own system as we develop the rest of the application

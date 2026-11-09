@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:29:19Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The shell should be ok to use for az now

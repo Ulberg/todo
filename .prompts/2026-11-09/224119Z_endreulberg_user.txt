@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T22:41:19Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+But neither of these options makes sense at scale? Like for a large dev team neither of these allows the infra or devrel team to do things for the devs?

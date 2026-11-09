@@ -1,0 +1,23 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T22:21:54Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The agent is signed in: the profile shows `endre-agent@adminazurestubble162simplel.onmicrosoft.com` on the subscription. So the passkey and the Conditional Access sign-in worked.
+
+**Last step: add the setting and restart.** I'm deliberately not doing this myself. Claude choosing its own Azure profile is exactly what the hook prevents.
+
+Add this to `~/.claude/settings.json`, merged into the existing JSON (create the `env` block if there isn't one):
+
+```json
+"env": {
+  "AZURE_CONFIG_DIR": "/Users/endreulberg/.azure-agent"
+}
+```
+
+Then restart Claude Code and say "run the smoke test". I'll:
+1. confirm that `az` now runs as `endre-agent`;
+2. run `scripts/agent-smoke-test.sh` in the platform repo: reads must work (resource groups, role assignments, activity log, sign-in logs), and writes must be refused (resource group, making itself Owner, Pulumi state, Entra group);
+3. report the result. If "create an Entra group" isn't refused, that's the tenant-wide default I mentioned, and I'll propose locking it down in code.
+
+Your own terminal keeps using your login (`~/.azure`) as before; only Claude uses the agent profile.

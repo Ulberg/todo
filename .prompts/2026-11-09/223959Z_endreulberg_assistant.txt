@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T22:39:59Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, there are two simpler ways that work *on your account*, without a second account and without a private key on your laptop. Dependabot is itself a GitHub App, and option 1 below is the same idea pointed at you.
+
+**1. Your own GitHub App, which Claude uses "on your behalf"** (recommended)
+- You create a small app, for example "Claude for Ulberg", once through a form on GitHub. You set exactly what it may do: **contents and pull requests: write; everything else: none** (no workflows, secrets, settings or Actions). You install it only on `platform` and `todo`.
+- Claude signs in through the app with a **device code**: Claude shows a code, you confirm it in the browser. The token is then the **intersection** of your rights and the app's, so it can never do more than the app allows. It **expires after 8 hours**, much like the agent's Azure session.
+- **Attribution:** PRs and commits show as *you, via the app*. GitHub marks them with the app's badge, so "Ulberg's Claude" is visible, just like "Claude agent of endre (Ulberg)" in Entra.
+- **No private key on your laptop.** The device flow needs only the app's public client ID.
+
+**2. A fine-grained token on your account** (simplest)
+- github.com → Settings → Developer settings → Fine-grained token: only `platform` and `todo`; contents and pull requests: write; nothing else; expires after, for example, 30 days.
+- Stored in the macOS keychain through a separate `gh` profile.
+- **Downside:** everything shows as *you*, without any marker, so in GitHub's history you can't tell what Claude did. The permissions are as narrow as in option 1.
+
+**Either way:** Claude can't change workflows, approve, merge or touch settings. You approve and merge as before, and the hook makes sure `gh` and `git push` only use Claude's own profile.
+
+My recommendation is **option 1**. It matches what we just did in Azure: Claude acts on your behalf, attached to you, and is visible as itself. Which one do you want?

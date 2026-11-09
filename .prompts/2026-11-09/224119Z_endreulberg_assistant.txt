@@ -1,0 +1,33 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T22:41:19Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+You're right. Both options were *personal* solutions, and they don't scale: every developer would set things up by hand, and the platform team couldn't grant, change or revoke anything centrally. Here's how this works at scale, and what I'd do here.
+
+**The core problem: `Ulberg` is a personal account, not an organization** (D26). A personal account has no teams, no org-owned apps and no central policies. At scale, everything on GitHub goes through an **organization**:
+
+| | Personal account (today) | GitHub organization (Free) | Enterprise with Entra login (EMU) |
+|---|---|---|---|
+| Teams from `people.yaml` (Pulumi) | ✗ | ✓ | ✓ |
+| **One** Claude app for everyone, owned by the platform team | ✗ | ✓ | ✓ |
+| Rules for tokens (forbid classic PATs, max lifetime, revoke) | ✗ | ✓ | ✓ |
+| Central audit log | partial | ✓ | ✓ |
+| GitHub accounts created **automatically from Entra**, agents included | ✗ | ✗ | ✓ |
+| Cost | 0 | 0 (public repos) | about USD 21/user/month |
+
+**How it would work in the organization:**
+- **A team in `people.yaml`** → the Pulumi `access` stack creates GitHub teams and repo access, as it already does in Entra.
+- **The platform team owns one GitHub App, "Claude"**, installed on the org's repos with narrow permissions (contents and PRs only, no workflows or settings). Permissions and revocation sit centrally with the platform team.
+- **Each developer authorizes the app once** (one click, then a device code per session). Claude then acts as *the developer, via the Claude app*: visibly attributed, never more than the app allows, never more than the developer.
+- **Azure:** this already scales. Agent accounts come from `people.yaml`, and only the one-time passkey setup is manual. At larger scale, agents that run centrally (for example in CI) would use workload-identity federation, with no laptop sign-in at all.
+
+**For us that means:** move `platform` and `todo` into a free GitHub organization, then the shared Claude app. That's a real piece of work and **hard to reverse**:
+- **Repo transfer:** URLs redirect.
+- **Azure OIDC:** the subjects contain the owner ID, so all federated credentials must be updated, or CI loses access.
+- **Rulesets, environments and app installations** move with the repos and need checking.
+- **D26 changes.**
+
+My recommendation is the **organization (Free) plus one shared Claude app**. EMU only makes sense when there's a real team and budget.
+
+Should I write this into PLAN.md as a proposal (new decision, with the migration steps in order) so you can confirm it before I touch anything? I've stopped the GitHub machine-user work; nothing is committed. Two things are separate from this: PR #16 (tenant lockdown) still waits for the permission command and your "merge", and the Azure side of Claude's identity is done and tested.
