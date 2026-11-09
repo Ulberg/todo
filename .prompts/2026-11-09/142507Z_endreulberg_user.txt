@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:25:07Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+As soon as this is fixed, we are then in a state where the admin console is under controll, correct? Such that we can start working on the backend and telemetry for the core application and database?

@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v8. Phase 0 in progress**: one step left, Conditional Access on (incl. short sessions, D39). Standing admin access is gone. v8 adds the release flow to prod (D37, D38).
+> **Status: v9. Phase 0 done (2026-11-09); Phase 1 next.** v9 adds the agent identity for Claude (D41).
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -148,6 +148,7 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D38 | **`prod` gets its own AKS cluster, Postgres, VNet and Key Vault** (own resource groups, same subscription). It is built after Phase 6, once the solo-dev exception (D34) is gone | msg 2026-11-09 |
 | D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers and guests sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
 | D40 | **Privilege alerts**: PIM emails every activation and every new assignment of Global Admin, `platform-write` and `platform-admin` to the platform alert list (GitHub secret `PLATFORM_ALERT_EMAILS`, kept out of the public repos). Log-based alerts (break-glass sign-ins, role changes not made by the apply identity, PIM/CA policy changes) come with Phase 5 | msg 2026-11-09 |
+| D41 | **Claude gets its own read-only identity**, not the developer's: one agent account per developer in `people.yaml`, in a `platform-agents` group with read roles only (Reader, Log Analytics Reader, Monitoring Reader, AKS RBAC Reader, Entra Reports Reader, Cost Management Reader), never PIM-eligible and covered by the standing-access check. The developer signs it in (own passkey, separate `AZURE_CONFIG_DIR`/kubeconfig), so no secrets on disk and audit logs separate human from agent. First step of Phase 3 | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -198,7 +199,7 @@ How it's enforced:
   - `app`: the app tenant in Loki and Tempo + app metrics in Prometheus, for `app-developers`.
   Org membership comes from Entra group → org mapping.
 - **Loki / Tempo multi-tenancy**: app and infra telemetry go to separate tenants, so the `app` org can't query infra data even by accident.
-- **Claude** uses the developer's own Entra login through the Grafana MCP server (`mcp-grafana`). Infra devs' Claude can also use `az` and `kubectl` with the read-only roles. Group membership decides what each Claude sees. No secrets on disk.
+- **Claude** uses its own agent account (D41), never the developer's login: read roles only and never PIM-eligible, so a developer's PIM activation never gives Claude write access. Through the Grafana MCP server (`mcp-grafana`). Infra devs' Claude can also use `az` and `kubectl` with the read-only roles. Group membership decides what each Claude sees. No secrets on disk.
 
 ### 5.2 App users and their agents
 - Users sign in through Entra External ID. MCP clients get a delegated token for that user, so they get the same permissions as the user.
@@ -325,8 +326,8 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - `.editorconfig`, Fantomas, Prettier/ESLint (all enforced in CI only, no git hooks), Claude Code prompt-capture hooks, gitleaks + Dependabot.
 - Azure bootstrap checklist + script (§4). Pulumi "bootstrap" stack (F#): state storage, CI identity, `access/people.yaml` → Entra groups, PIM eligibility + policies, Conditional Access, GitHub rulesets, CODEOWNERS.
 - **Done when** both repos are protected by rules defined in code, and the CI identity can run `pulumi preview`.
-- Status (2026-11-09): bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Steps after that:
-  1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy. This step also adds CA05–CA07 (short sessions and a fresh passkey for every PIM activation, D39).
+- ✅ **Phase 0 done 2026-11-09.** Status: bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Steps after that:
+  1. ✅ **Conditional Access on** (done 2026-11-09, platform PRs #9–#12). CA01–CA09 enforced; security defaults off. PIM activation of Global Admin, `platform-write` and `platform-admin` requires authentication context `c1` (CA05: fresh phishing-resistant sign-in), set by `pim-policy-rules.sh` because the `azuread` provider can't switch a group policy from MFA to a context (Entra refuses both at once). Every rule is read back on apply.
   2. ✅ **Remove standing admin access** (done 2026-11-09, platform PRs #3–#8). Global Admin is PIM-only (1 h, MFA, justification; no permanent active assignment) and was tested; the admin account has Reader day to day; the owner Microsoft account keeps only billing (D35); subscription Owner is held only by the two emergency accounts (D36); every activation and new assignment emails the alert list (D40). `check_standing_access.sh` fails the `pulumi preview` check (every PR, main and nightly) if standing Global Admin, Privileged Role Administrator, Owner or User Access Administrator appears outside PIM and the emergency accounts.
 
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
@@ -343,6 +344,7 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - **Done when** `make up` brings the full stack up locally and the Phase 1 app deploys via ArgoCD.
 
 ### Phase 3: Azure foundation (Pulumi F#, applied only by CI after approval)
+- First: agent identities for Claude (D41), before Claude reads any real infrastructure.
 - Workforce groups, External ID app registrations, workload identities.
 - VNet + subnets + NSGs, private DNS, ACR, Key Vault, AKS (Entra RBAC, no local accounts, workload identity, Azure CNI overlay + Cilium), Postgres Flexible (private access, Entra-only auth with migrator/app/read-only identities).
 - Pulumi unit tests (mocks); `preview` on every PR, `up` after approval.

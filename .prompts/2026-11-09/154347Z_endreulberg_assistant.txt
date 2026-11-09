@@ -1,0 +1,6 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T15:43:47Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The failing step is the Pulumi preview itself. The standing-access check before it passed. GitHub is slow to deliver the log right now; I'll report when it arrives.

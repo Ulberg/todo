@@ -1,0 +1,15 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T21:38:39Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The apply succeeded, and every rule was confirmed by reading it back:
+- **Global Admin:** MFA is off and the authentication context is on, so activation needs a fresh passkey.
+- **`platform-write` and `platform-admin`:** the same.
+
+**Last test of Phase 0:** activate `platform-admin`. It should ask for your **passkey**, even though you're already signed in:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadgroup
+
+The first time, the portal may show "Additional verification required" and send you to a sign-in. That's CA05 doing its job.
+
+If it asks for your passkey, Phase 0 is done. I'll then mark it in PLAN.md, together with the agent-identity step as the start of Phase 3 (unless you'd rather put it elsewhere), and we start Phase 1. The nightly preview will also flag any drift in the PIM policies.

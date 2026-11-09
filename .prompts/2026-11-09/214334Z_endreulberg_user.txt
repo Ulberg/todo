@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T21:43:34Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+There was no extra passkey, but I had to login with passkey before getting to the panel at all. So i guess that might have been even though I was already logged in

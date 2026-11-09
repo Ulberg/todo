@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T21:35:20Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The preview is safe:
+- **2 creates:** the activation steps for `platform-write` and `platform-admin`.
+- **1 replace:** the Global Admin rules.
+- **2 updates:** the group policies, with no visible change; they still say MFA = on. The provider leaves the activation check alone, and the new step switches it afterwards, in the right order.
+
+All checks on PR #12 pass: https://github.com/Ulberg/platform/pull/12
+
+**Where things stand:**
+- Conditional Access is **on** (CA01–CA09 enforced).
+- PIM still asks for MFA plus a justification; nothing is weaker than before.
+- This PR adds the last piece: a fresh passkey for every activation.
+
+Say "merge", then approve the apply. After that:
+1. **Test it:** activate `platform-admin`. It should ask for your passkey even though you're already signed in:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadgroup
+2. I check the next preview for drift, mark Phase 0 done in PLAN.md, and we start Phase 1.

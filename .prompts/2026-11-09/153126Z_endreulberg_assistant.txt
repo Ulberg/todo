@@ -1,0 +1,6 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T15:31:26Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I'm fetching the failed job's log; it's slow and running in the background. I'll report as soon as I have it.
