@@ -1,0 +1,26 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:21:47Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The bootstrap got about halfway, then Azure blocked it on a permission. You need to change one setting as the owner before I can finish it.
+
+**What's done** (the script checks before creating, so re-running it won't duplicate anything):
+- resource providers registered;
+- Pulumi state storage and container (Entra-only sign-in);
+- Key Vault and the key for Pulumi secrets;
+- the apply identity, with Contributor on the subscription.
+
+I also had to fix two things in the script: a storage flag this CLI version doesn't support, and a wait for provider registration to finish. Both fixes are pushed.
+
+**What blocked it:** Azure refused to give the apply identity *Role Based Access Control Administrator*. When you gave the admin account Owner, the role assignment was saved with Azure's default **condition**, which blocks granting privileged roles to others. That's a safe default, but this one-time bootstrap has to grant exactly such a role.
+
+**Fix it as the owner:**
+1. Sign in to portal.azure.com as the **owner** account.
+2. Go to **Subscriptions → your subscription → Access control (IAM) → Role assignments**.
+3. Find **Owner → Endre Ulberg (Admin)**. Open the assignment and edit its **Conditions**.
+4. Choose **"Allow user to assign all roles (highly privileged)"** and save. The alternative is to remove the condition.
+
+Then tell me, and I'll refresh the login and run the script again. If the error still shows up after that, your login token is older than the change. In that case run `! az login --tenant e17ac17e-d8cd-4280-a4e5-94ad2bb85549` again.
+
+Phase 3 replaces this standing Owner with a PIM-eligible role.

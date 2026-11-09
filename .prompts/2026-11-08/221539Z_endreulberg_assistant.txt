@@ -1,0 +1,36 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:15:39Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've written the bootstrap script and the checklist, pushed them to the platform repo, and CI is green. The script has only been syntax-checked, because the Azure CLI isn't logged in yet.
+
+**What's new in `Ulberg/platform`:**
+- `bootstrap/config.env` holds your IDs. They aren't secrets, so it's fine for them to be in the public repo.
+- `access/people.yaml` now has your admin object ID.
+- `bootstrap/README.md` is the full checklist (Parts A–C), including the four problems you ran into.
+- `bootstrap/bootstrap.sh` checks before it creates anything, so it's safe to run again. It:
+  - registers the Azure resource providers;
+  - creates Pulumi state storage that only accepts Entra sign-in (shared keys off), with versioning and 30-day soft delete;
+  - creates a Key Vault key that encrypts Pulumi's secrets;
+  - creates **`id-platform-apply`**, which can only sign in from an approved run in the `dev` environment. It gets Contributor, RBAC Administrator, and Graph permissions for groups, apps, PIM and Conditional Access.
+  - creates **`id-platform-preview`**, which can only sign in from pull requests and gets read-only access;
+  - sets the GitHub variables Pulumi needs.
+
+  Neither identity has a client secret; both sign in with GitHub's OIDC token.
+
+**Your turn: run it.** Typing `!` in front of the commands runs them here, so I see the output:
+```
+! az login --tenant e17ac17e-d8cd-4280-a4e5-94ad2bb85549
+! ~/Github/Private/platform/bootstrap/bootstrap.sh
+```
+Sign in as the **admin account**, not the owner. It needs Global Admin to grant the Graph permissions, and Owner on the subscription to create the role assignments.
+
+Things to expect:
+- It takes about 5 minutes. Part of that is waiting for new role assignments to take effect.
+- **The apply identity becomes effectively a tenant admin.** That's what lets Pulumi manage groups, PIM and Conditional Access. The safeguard is that only an approved `dev` run from `main` can get a token for it.
+- **One part I'm not sure of:** the script and the README assume Pulumi can reach the state storage with Entra sign-in alone (shared keys are off). The first CI run of the Pulumi stack will confirm whether that holds.
+
+While you run it, I'll start on the Pulumi F# bootstrap stack and its CI workflows: `preview` on pull requests, `apply` only after approval in `dev`.
+
+The External ID domain is still missing (the `….ciamlogin.com` name). I won't need it until Phase 3.

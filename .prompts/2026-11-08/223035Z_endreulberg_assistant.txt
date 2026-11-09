@@ -1,0 +1,29 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:30:35Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The bootstrap ran all the way through. Azure took about 3 minutes to apply your condition change, then the script finished.
+
+**What exists now:**
+
+| What | Status |
+|---|---|
+| Resource providers | Registered |
+| Pulumi state `stplatform21784576/pulumi` | Accepts only Entra sign-in. I tested it: `pulumi login` works without any storage key |
+| Secrets key `kv-platform-21784576/pulumi` | Created; both CI identities can encrypt and decrypt with it |
+| `id-platform-apply` (`214db09d-…`) | Can only sign in from approved `dev` runs. Contributor + RBAC Administrator on the subscription, plus Graph permissions for groups, users, apps, PIM and Conditional Access |
+| `id-platform-preview` (`c9cd1f0f-…`) | Can only sign in from pull requests. Reader, read-only Graph, and write access only to the state container (preview needs it for lock files) |
+| GitHub variables | All 6 set in `Ulberg/platform`, with `AZURE_CLIENT_ID` only in the `dev` environment |
+
+Nothing has a client secret; both identities sign in with GitHub's OIDC token. I added the Owner-condition problem and the successful state test to `bootstrap/README.md`, and pushed it.
+
+Your admin account still has standing Owner, Blob Data Contributor and Key Vault Crypto Officer. That's needed for the bootstrap, and Pulumi turns them into PIM-eligible roles later.
+
+**Next is the last piece of Phase 0:**
+- **The Pulumi F# bootstrap stack.** It reads `access/people.yaml` and creates the Entra groups with their nesting, your memberships, the Reader assignment, and the break-glass group with PIM eligibility. On the GitHub side it creates the branch rules for both repos, plus a CI check that `CODEOWNERS` matches `people.yaml`.
+- **The CI workflows:** `preview` on every pull request, and `apply` after you approve in `dev`.
+
+Conditional Access goes in only in **report-only** mode at first, so a policy mistake can't lock you out. We switch it to enforced, and turn off security defaults, as a separate step once the reports look right.
+
+I'll do this next, starting with a PR so you can see the first `pulumi preview` before anything is applied.

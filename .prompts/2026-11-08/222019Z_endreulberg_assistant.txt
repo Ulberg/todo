@@ -1,0 +1,33 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-08T22:20:19Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+You don't log in to `ciamlogin.com` yourself. It's the sign-in address your **app users** will use.
+
+**The External ID domain**
+- `ulbergtodo.onmicrosoft.com` is the External ID tenant's directory domain. The sign-in host comes from the same name: **`ulbergtodo.ciamlogin.com`**.
+- I confirmed it's live by fetching its public sign-in configuration (the OpenID configuration). It returns `https://ulbergtodo.ciamlogin.com/d5f5c323-…/oauth2/v2.0/authorize`.
+- Both names are now in `bootstrap/config.env` (pushed).
+- In Phase 6–7 the frontend's MSAL config and the backend's token validation will point there, and users will see the sign-in/sign-up page on that host.
+- **To administer that tenant:** go to entra.microsoft.com → gear icon (Settings) → **Directories + subscriptions**, and switch to the `ulbergtodo` directory. The account that created it is its admin.
+
+**Logging in to the Azure CLI**
+
+Run this here, with the `!` in front, so the output lands in our conversation:
+```
+! az login --tenant e17ac17e-d8cd-4280-a4e5-94ad2bb85549
+```
+1. A browser window opens. Choose **"Use another account"** and sign in as the **admin account** (`…@<tenant>.onmicrosoft.com`) with its passkey, not the owner's personal Microsoft account.
+2. Back in the terminal, the CLI may list subscriptions and ask you to pick one. Choose the pay-as-you-go one (`21784576-…`).
+3. Check that it worked:
+   ```
+   ! az account show --query "{tenant:tenantId, subscription:id, user:user.name}" -o table
+   ```
+   You should see tenant `e17ac17e-…`, subscription `21784576-…`, and your admin username.
+
+**If something goes wrong**
+- **No browser opens**, or it's on another machine: add `--use-device-code`. You'll get a code to enter at microsoft.com/devicelogin.
+- **"No subscriptions found"**: the admin still doesn't have Owner on the subscription. Sign in to the portal as the owner and add it under Subscription → Access control (IAM).
+
+Once `az account show` looks right, run `! ~/Github/Private/platform/bootstrap/bootstrap.sh`.
