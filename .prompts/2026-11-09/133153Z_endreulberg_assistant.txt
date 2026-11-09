@@ -1,0 +1,12 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:31:53Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+That's because your activation from earlier is still running. I checked, and your admin account is currently an active member of `platform-admin`. It's the activation you did for the first test, and it ends at most 1 hour after you made it, so within the next few minutes. PIM won't start a second activation while one is still active, which is the same reason you got that message earlier.
+
+**Two ways to test the email:**
+- **Wait** a few minutes until it expires, then activate again: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadgroup
+- **Or end it now:** same page, **Active assignments** tab, then **Deactivate** on `platform-admin`, then activate it again on **Eligible assignments**.
+
+Either way the new activation should send you an email.

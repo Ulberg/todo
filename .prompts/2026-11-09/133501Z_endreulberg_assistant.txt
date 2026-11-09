@@ -1,0 +1,17 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:35:01Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PR #8 is ready: https://github.com/Ulberg/platform/pull/8. All checks pass.
+
+The new check ran against the real tenant and passed: Global Admin, Owner and User Access Administrator are held only by the break-glass accounts.
+
+**Step 2 is done and verified:**
+- **Subscription Owner:** only the two break-glass accounts.
+- **Your admin account:** Reader day to day, Global Admin through PIM.
+- **Your owner account:** billing only.
+
+**What #8 adds:** the `pulumi preview` check now fails if standing Global Admin, Privileged Role Administrator, Owner or User Access Administrator appears outside PIM and the emergency accounts. It runs on every PR, on `main` and nightly, and GitHub emails you when a nightly run fails. It also deletes the one-time removal workflow.
+
+Say "merge" and I'll merge it and mark step 2 done in PLAN.md. The only Phase 0 item left after that is Conditional Access with short sessions.

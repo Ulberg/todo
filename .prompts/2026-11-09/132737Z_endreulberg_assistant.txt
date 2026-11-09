@@ -1,0 +1,17 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:27:37Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The apply succeeded, and all 8 Global Admin rules were set and confirmed by reading them back, including the three alert rules. So the earlier failure was just a delay before the recipient read back, and the retry handles it.
+
+**Test the alert.** Activate `platform-admin` here, and you should get an email at your owner address within a few minutes:
+https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadgroup
+
+Global Admin activations are now set to email the same address.
+
+**Still waiting for your go-ahead: step 2 of the removal.**
+- It removes your admin account's Owner, Blob Data Contributor and Key Vault Crypto Officer.
+- It removes your owner account's Global Admin and Owner. The owner account keeps only billing.
+
+Then I'll do a last small PR. It adds the standing-access check and deletes the one-time removal workflow. After that, the next piece of work is Conditional Access with short sessions.

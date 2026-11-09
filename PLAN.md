@@ -1,6 +1,6 @@
 # PLAN.md
 
-> **Status: v8. Phase 0 in progress** (the `access` stack is applied; standing admin access is being removed). v8 adds the release flow to prod (D37, D38).
+> **Status: v8. Phase 0 in progress**: one step left, Conditional Access on (incl. short sessions, D39). Standing admin access is gone. v8 adds the release flow to prod (D37, D38).
 > Working rules live in `AGENTS.md`. History lives in `.prompts/`.
 
 ## 1. Goal
@@ -323,9 +323,9 @@ Savings levers: stop AKS + Postgres between demos (both environments). Trade-off
 - `.editorconfig`, Fantomas, Prettier/ESLint (all enforced in CI only, no git hooks), Claude Code prompt-capture hooks, gitleaks + Dependabot.
 - Azure bootstrap checklist + script (§4). Pulumi "bootstrap" stack (F#): state storage, CI identity, `access/people.yaml` → Entra groups, PIM eligibility + policies, Conditional Access, GitHub rulesets, CODEOWNERS.
 - **Done when** both repos are protected by rules defined in code, and the CI identity can run `pulumi preview`.
-- Status (2026-11-09): bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Two steps left, each its own PR:
+- Status (2026-11-09): bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Steps after that:
   1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy. This step also adds CA05–CA07 (short sessions and a fresh passkey for every PIM activation, D39).
-  2. **Remove standing admin access.** In this order: make the admin account eligible for Global Admin (max 1 h, MFA + justification; the `azuread` provider can't set directory-role PIM policies (§7), so the stack runs a small Graph script as a Pulumi `Command`, on apply only; platform PRs #3–#5, step 1 of the removal done and the activation tested; plus PIM alert emails, D40); you test an activation; then remove the standing assignments. Decided 2026-11-09 (D35, D36): the admin loses its standing Global Admin, subscription Owner and the two bootstrap roles on the state account and vault; the owner Microsoft account loses Global Admin and subscription Owner entirely (billing stays with its billing role); subscription Owner is reachable **only through the break-glass accounts**.
+  2. ✅ **Remove standing admin access** (done 2026-11-09, platform PRs #3–#8). Global Admin is PIM-only (1 h, MFA, justification; no permanent active assignment) and was tested; the admin account has Reader day to day; the owner Microsoft account keeps only billing (D35); subscription Owner is held only by the two emergency accounts (D36); every activation and new assignment emails the alert list (D40). `check_standing_access.sh` fails the `pulumi preview` check (every PR, main and nightly) if standing Global Admin, Privileged Role Administrator, Owner or User Access Administrator appears outside PIM and the emergency accounts.
 
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
 - F# Oxpecker (.NET 10): `/health/live`, `/health/ready`, `/version`.

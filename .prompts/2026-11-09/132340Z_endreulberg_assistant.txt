@@ -1,0 +1,10 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:23:40Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Useful clue: the preview shows **no drift on the two group policies**. Pulumi reads them back from Entra, so the alert address did stick there. That points to a delay, or to something specific to Global Admin, rather than Graph rejecting the address.
+
+PR #7 is ready: https://github.com/Ulberg/platform/pull/7. All checks pass, and the preview shows exactly 1 replace (the Global Admin policy step re-runs).
+
+Say "merge" and I'll merge it. Then you approve the apply, and we'll see from it which cause it was.

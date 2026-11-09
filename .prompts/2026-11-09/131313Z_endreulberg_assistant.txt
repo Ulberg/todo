@@ -1,0 +1,20 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:13:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PR #6 is ready: https://github.com/Ulberg/platform/pull/6. All checks pass, and the preview matches: 2 updates and 1 replace.
+
+**What it does:** every Global Admin, `platform-write` or `platform-admin` activation emails your owner address. So does every new eligible or active assignment of those roles.
+
+**Keeping the address private:**
+- It's stored as the GitHub secret `PLATFORM_ALERT_EMAILS`, which I set to the owner account's address.
+- The stack treats it as a Pulumi secret. I checked the public PR comment and the address doesn't appear in it.
+- More addresses can go in the same secret, comma-separated. I left the admin account out because it has no mailbox.
+
+**Three things wait for your go-ahead:**
+1. **Merge #6.** After you approve its apply, a quick test is to activate `platform-admin`, which should send you an email: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadgroup
+2. **Step 2 of the removal:**
+   - removes the admin account's Owner, Blob Data Contributor and Key Vault Crypto Officer;
+   - removes the owner account's Global Admin and Owner.
+3. **Then Conditional Access with CA05–CA07** (short sessions, passkey on every activation). That needs you to turn off security defaults, with a direct link when we get there.

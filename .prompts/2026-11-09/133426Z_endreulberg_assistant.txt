@@ -1,0 +1,21 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:34:26Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Alerts are confirmed: an escalation now emails you.
+
+Here's where Phase 0 stands:
+
+| | Status |
+|---|---|
+| Global Admin only through PIM (1 h, MFA, justification) | ✅ tested |
+| No permanent active assignment of Global Admin possible | ✅ |
+| Break-glass accounts hold subscription Owner (in code) | ✅ |
+| Alert emails on every escalation and new assignment | ✅ tested |
+| Admin account's standing Global Admin removed (step 1) | ✅ |
+| **Step 2:** admin's Owner and state roles, and the owner account's Global Admin and Owner, removed | ⏳ waiting for your go |
+| Standing-access check, and deleting the one-time workflow | after step 2 |
+| Conditional Access on, including short sessions and a passkey for every activation (CA05–CA07) | after that |
+
+Shall I start step 2? Once it runs, your admin account has only Reader on the subscription day to day. Your owner account keeps just billing.
