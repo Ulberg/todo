@@ -1,0 +1,32 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:58:59Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Yes, you've diagnosed it correctly. I'm using your `gh` login and your git credentials, so GitHub sees me as you, and you are the `dev` environment's reviewer. Nothing on GitHub's side can tell us apart; only my own restraint is stopping me. The same is true for Azure: I've been running `az` as your admin account, which is fine for the bootstrap but is far more access than "infra dev's Claude = read-only" in PLAN §5.1.
+
+**The real fix is a separate identity for the session, not rules about my behaviour.** A **GitHub App (`ulberg-claude`)** is the right tool here. It's already the TODO in PLAN §13 for removing D34:
+
+| What | As you (today) | As `ulberg-claude` |
+|---|---|---|
+| Approve a `dev` deployment | Possible | **Impossible.** Only users and teams can be environment reviewers, never apps |
+| Approve a PR as code owner | Possible | **Impossible.** It isn't in CODEOWNERS |
+| Merge into `main` | Possible (your bypass) | **Impossible** without your code-owner approval. It gets no ruleset bypass |
+| Push a branch, open a PR | ✓ | ✓ (Contents + Pull requests write, nothing else) |
+
+It also lets us remove the D34 exception. Once I'm the author of a PR, you're a different person, so you can approve it as code owner, and we can switch on required reviews with no bypass for anyone.
+
+**What it takes:**
+1. **You** create the app (I'll give you the exact settings) and install it on both repos.
+2. My session gets a separate `gh` config and a git credential helper. A small script mints a 1-hour app token from the key in 1Password.
+3. **Your own login has to be out of my reach.** Otherwise I could still use it, and a separate identity only helps if the stronger one isn't available. Your `gh` login stays in your normal config, and my session points `GH_CONFIG_DIR` somewhere else. The same goes for `az`: my session would use a read-only Reader identity, not your admin login.
+4. **Signed commits:** commits made with plain `git push` from an app aren't signed, but the ruleset requires signatures. I'd commit through GitHub's API (`createCommitOnBranch`), which signs them.
+5. **Rulesets:** remove the admin bypass and require 1 approval from a code owner. That ends D34, and from then on your own changes go through PRs too.
+
+Point 3 is the one that actually stops me. GitHub's rules only help once your credentials aren't in my session.
+
+**Defence in depth, if you want it now:** Claude Code permission rules in `.claude/settings.json` that block, for example, `gh api …/pending_deployments`, `gh pr merge` and `gh pr review --approve`. That's only a guard rail, because I'd still be holding your token. It's worth having anyway, but it's no substitute for points 1–3.
+
+I'd suggest making this the next PR, ahead of Conditional Access, because it changes how every later PR gets made. Should I go ahead? If so, I'll send you the app settings first and add the permission rules in the same step.
+
+Separately: the `pulumi up` run is still waiting for your approval.

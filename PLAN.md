@@ -128,6 +128,8 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D32 | **No service mesh in v1**; add one when a trigger in §8 happens | msg 6 |
 | D33 | Infra devs reach the DB through a `db-access` proxy pod, not Teleport (§4.1) | msg 6 |
 | D34 | **Bootstrap exception:** while you are the only person (infra dev, admin, app dev and lead of both repos), commits go straight to `main` without required review. GitHub doesn't allow approving your own PR. This is temporary; see the TODO in §13 | msg 7 |
+| D35 | The owner Microsoft account keeps only its billing role: no Global Admin and no subscription Owner, not even eligible | msg 2026-11-09 |
+| D36 | Subscription **Owner only via the break-glass accounts**. `platform-admin` (PIM, 1 h) gets no Owner | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
 
@@ -295,9 +297,9 @@ Savings levers: stop AKS + Postgres between demos. Trade-off kept: no managed WA
 - `.editorconfig`, Fantomas, Prettier/ESLint (all enforced in CI only, no git hooks), Claude Code prompt-capture hooks, gitleaks + Dependabot.
 - Azure bootstrap checklist + script (§4). Pulumi "bootstrap" stack (F#): state storage, CI identity, `access/people.yaml` → Entra groups, PIM eligibility + policies, Conditional Access, GitHub rulesets, CODEOWNERS.
 - **Done when** both repos are protected by rules defined in code, and the CI identity can run `pulumi preview`.
-- Status (2026-11-09): bootstrap done; `platform/stacks/access` written (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Two steps left, each its own PR:
+- Status (2026-11-09): bootstrap done; `platform/stacks/access` merged and applied (PR #2) (groups, PIM for Groups, Reader for `platform-read`, rulesets, environments, CODEOWNERS check), preview runs clean. Two steps left, each its own PR:
   1. **Conditional Access on.** The policies are in code behind `access:conditionalAccess` (`off` → `report-only` → `on`). Entra doesn't allow CA policies while security defaults are on, so the switch is: you turn security defaults off, an apply sets `report-only`, you check the report-only results in the sign-in logs, and a second apply sets `on` the same day. Report-only enforces nothing, so that window is kept to hours, not days. The emergency accounts are excluded from every policy.
-  2. **Entra admin roles to PIM.** Global Admin etc. become eligible (max 1 h) for platform leads and your standing assignment is removed; also the admin's standing bootstrap roles on the state account and vault. The `azuread` provider can't set directory-role PIM policies, so that part is a CI script calling Graph (§7).
+  2. **Remove standing admin access.** In this order: make the admin account eligible for Global Admin (max 1 h, MFA + justification; the 1 h policy is a CI script calling Graph, because the `azuread` provider can't set directory-role PIM policies, §7); you test an activation; then remove the standing assignments. Decided 2026-11-09 (D35, D36): the admin loses its standing Global Admin, subscription Owner and the two bootstrap roles on the state account and vault; the owner Microsoft account loses Global Admin and subscription Owner entirely (billing stays with its billing role); subscription Owner is reachable **only through the break-glass accounts**.
 
 ### Phase 1: Walking skeleton backend + local tier 1 + CI
 - F# Oxpecker (.NET 10): `/health/live`, `/health/ready`, `/version`.

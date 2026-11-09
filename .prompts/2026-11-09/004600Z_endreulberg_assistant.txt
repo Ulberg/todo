@@ -1,0 +1,39 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:46:00Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I've rewritten the code to follow your rules, written them down in a style guide, and made CI fail on the patterns a script can catch. Everything is green: all checks on [PR #2](https://github.com/Ulberg/platform/pull/2), and todo's CI including the new `fsharp style` job.
+
+**Your question about `let g` in `Entra.groups`:** the record wasn't mutated, because F# records are immutable. But the function wasn't pure either. Each Pulumi constructor registers a resource with the engine, and the results were discarded with `|> ignore`. While fixing that I found two places that really did mutate: the Conditional Access helper set `ExcludedUsers` after creating the object, and `checkCodeowners` used `let mutable errors`.
+
+**How the stack runs now** (input data → domain model → action → report):
+1. **Input:** `Program.fs` reads `people.yaml` and the stack config.
+2. **Domain model:** `People.parse` builds `Access`, and the new `Desired.plan` turns it into a `Plan`. The plan is plain data: groups, memberships, PIM rules, Azure roles, Conditional Access policies, rulesets, collaborators and environments. All decisions are made here, in pure code, and it has 9 unit tests. The CODEOWNERS comparison is also pure now (`Codeowners.check` returns a `Result`).
+3. **Action:** `Entra.deploy`, `AzureRbac.deploy` and `GitHub.deploy` only turn the plan into resources and return them; they make no decisions.
+4. **Report:** every error is logged in one place and the run fails without a stack trace. Otherwise it logs a summary like `access: 5 groups, 5 memberships, 2 PIM eligibilities, …`.
+
+**No nulls:**
+- The DTO fields are `option`.
+- YamlDotNet only turns the YAML into plain data. System.Text.Json, which already supports F# records, options, lists and maps, reads that into the DTO and rejects unknown keys.
+- The one library call that can return null is converted with `Option.ofObj` on the same line, with a comment.
+- No new packages were needed.
+
+**The style guide is `docs/fsharp-style.md`,** with the same file in both repos and linked from both AGENTS.md files. It covers:
+- the pipeline shape;
+- no mutation and no hidden side effects, in any file, without exceptions;
+- `Option` and `Result` instead of null;
+- DTO → domain parsing;
+- single-case types with companion modules;
+- FsToolkit for errors, and established libraries before your own helpers.
+
+Each rule links to the F# for Fun and Profit article it comes from: *Designing with types*, *The Option type*, *Railway oriented programming*, applicative validation, and *Serializing your domain model*. I checked that every link resolves to the right article.
+
+**What CI now checks:**
+- **Style script, both repos:** fails on `mutable`, `<-`, `|> ignore` and null checks in F# files; comments are ignored. I added a file with each violation and confirmed it fails.
+- **Platform:** fails if its copy of the style guide differs from todo's.
+- **todo:** `fsharp style` is now one of `main`'s required checks.
+
+There are 27 tests now, and the local preview gives the same plan as before: 20 resources to create, 2 to import, all names unchanged. I also updated my saved notes to read the style guide before writing any F#.
+
+The PR is ready to merge. Merging starts the preview on `main`, and then the `pulumi up` job waits for you to approve the `dev` environment.

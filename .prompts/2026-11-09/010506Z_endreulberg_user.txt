@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T01:05:06Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+WE'll keep going later but 1) Yes remove fully. 2) owner only via break-glass

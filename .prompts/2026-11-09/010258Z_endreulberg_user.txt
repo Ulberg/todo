@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T01:02:58Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+One question. I approved it, but it seems like it did not fix the high permissions for the owner and admin, which I thought was part of what this first PR did?

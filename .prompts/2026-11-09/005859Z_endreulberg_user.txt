@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T00:58:59Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Is there a way to make it such that you cannot do it, or is this due to you using my gh command so you act as me, and using either a Github App or just giving the claude session a seperrate gh, and git would resolve it

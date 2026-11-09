@@ -1,0 +1,20 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T00:56:30Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I merged [PR #2](https://github.com/Ulberg/platform/pull/2) (squash-merged, branch deleted). The first `main` run is now waiting for your approval before it applies anything.
+
+- **CI on `main`:** green.
+- **`pulumi preview` on `main`:** green. Same plan as in the PR: 20 to create, 2 to import. That's 5 groups, 5 memberships, 2 PIM eligibilities, 1 Azure role assignment, 0 Conditional Access policies, 2 rulesets, 0 collaborators and 2 environments.
+- **`pulumi up`:** waiting for approval of the `dev` environment.
+
+I won't approve it myself, even though GitHub would let me: that approval is the human check on every infra change.
+
+To approve, go to [the run](https://github.com/Ulberg/platform/actions/runs/42542897122) → *Review deployments* → tick `dev` → *Approve and deploy*.
+
+After the apply:
+- **Rulesets:** `main` in both repos requires signed commits, a code-owner review and the required checks. Only your admin role can bypass that (D34).
+- **Groups and PIM:** you're in `infra-developers`, `app-developers` and `platform-read`, and can activate `platform-write` (max 2 h) and `platform-admin` (max 1 h) in PIM.
+
+Tell me when it's done and I'll check the result and mark Phase 0 done in PLAN.md. Then I'll start the next PR: turning Conditional Access on, which begins with you turning off security defaults.

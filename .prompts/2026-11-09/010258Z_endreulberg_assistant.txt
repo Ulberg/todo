@@ -1,0 +1,39 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T01:02:58Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+You're right that standing access is still in place, but PR #2 never changed it: the PR description listed it under "Not in this PR", and my earlier messages listed it as a separate follow-up. I split it out deliberately, because it's the step that can lock you out.
+
+The apply itself succeeded: 20 created, 2 imported, and the `main` ruleset is active.
+
+**What PR #2 did:**
+- Created the new access groups.
+- Gave `platform-read` Reader.
+- Made you *eligible* for `platform-write` (max 2 h) and `platform-admin` (max 1 h).
+- Added the GitHub rules.
+
+These groups don't have any write roles yet; those come in Phase 3. So activating them gives you nothing extra today.
+
+**What's still standing right now:**
+
+| Account | Entra | Azure subscription |
+|---|---|---|
+| Owner (your Microsoft account, guest) | Global Admin | Owner |
+| Admin (`endre@…`) | Global Admin | Owner + Blob Data Contributor (state) + Key Vault Crypto Officer |
+| breakglass1/2 | Global Admin | (none) |
+| CI identities | (Graph app permissions) | as designed |
+
+The break-glass accounts keeping permanent Global Admin is intended. They're the way back in if PIM or Conditional Access breaks.
+
+**Proposed follow-up PR,** in a safe order:
+1. Make the admin account *eligible* for Global Admin, max 1 h, with MFA and a justification. Pulumi does the eligibility. A small CI script calling Graph sets the 1 h policy, because the Pulumi provider can't set PIM rules for directory roles.
+2. You test that activation works.
+3. Only then remove the standing assignments:
+   - the admin's Global Admin;
+   - the admin's subscription Owner. `platform-admin` gets Owner when activated, so emergency fixes in Azure go through PIM;
+   - the two bootstrap roles on the state storage and Key Vault. They're no longer needed, because CI has its own access.
+
+Before I write it, two choices are yours:
+1. **Your owner Microsoft account:** remove its Global Admin and subscription Owner entirely? I recommend that: billing and subscription recovery work through its billing role, not through those. Or would you keep it eligible?
+2. **Subscription Owner through `platform-admin` (PIM, 1 h):** OK, or would you rather have Owner reachable only via the break-glass accounts?
