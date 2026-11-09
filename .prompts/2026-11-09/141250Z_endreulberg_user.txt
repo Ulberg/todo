@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:12:50Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+1) Give guest same 12 h sign-in rule.  2) Ah, so i need to assign myself Global Admin to view it  fine. A) Security is Disabled. B) I'll do it and send a msg when it is done

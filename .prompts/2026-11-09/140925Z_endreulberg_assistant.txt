@@ -1,0 +1,22 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:09:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Both are expected at this point. Here's why, and what to do next.
+
+**1. The "Stay signed in?" prompt.** Nothing is enforced yet; all policies are in report-only mode, so you see Entra's defaults. Once PR #11 switches them on:
+- **Admin account (infra developer):** CA08 overrides your answer, so the session doesn't survive closing the browser. CA06 and CA07 force a fresh sign-in after 4 h for Azure tools and 12 h for everything else, whatever you clicked. The prompt may still appear, but it stops having any effect.
+- **Owner account:** it's a guest, not a developer, so CA06–CA08 don't apply to it. It would keep Entra's default of staying signed in for a long time. It can only reach billing now, but I'd still close this. Two options:
+  - hide the "Stay signed in?" prompt for the whole tenant (a branding setting I can put in the stack);
+  - and/or give guests the same 12 h sign-in rule.
+
+  Tell me if you want either one.
+
+**2. No Report-only tab.** I read the sign-in logs directly; that works while your Global Admin is active. Your admin sign-ins at 14:02–14:04 UTC show Conditional Access as **"not applied", with no report-only results at all**. So no policy was evaluated, which is what happens while **security defaults are still on**. The owner's sign-ins haven't appeared in the log yet; guest sign-ins can lag a few minutes.
+
+**Next:**
+1. Confirm that security defaults are now **Disabled**:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties
+2. Do the two fresh sign-ins again (admin in a private window, owner opening billing).
+3. Tell me when that's done. I'll read the results from the logs myself and tell you policy by policy what would have happened, so you don't have to dig through the portal.

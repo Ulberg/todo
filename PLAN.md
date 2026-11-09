@@ -146,7 +146,7 @@ So **both repos are public** (D26). gitleaks secret scanning runs in CI as a req
 | D36 | Subscription **Owner only via the break-glass accounts**. `platform-admin` (PIM, 1 h) gets no Owner | msg 2026-11-09 |
 | D37 | **Release flow** (§2.1). A PR approved by the app lead merges to app `main`; tag-only changes auto-deploy to `dev`; a release PR copies the dev tags to `prod`, and **the app lead approves it** | msg 2026-11-09 |
 | D38 | **`prod` gets its own AKS cluster, Postgres, VNet and Key Vault** (own resource groups, same subscription). It is built after Phase 6, once the solo-dev exception (D34) is gone | msg 2026-11-09 |
-| D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
+| D39 | **Short sessions** (Conditional Access, workforce tenant only): a fresh phishing-resistant sign-in for **every** PIM activation (authentication context); infra developers sign in to Azure portal/CLI/ARM again every **4 h**, with no persistent browser session; all developers and guests sign in to everything else again every **12 h**. App users (External ID tenant) are not affected | msg 2026-11-09 |
 | D40 | **Privilege alerts**: PIM emails every activation and every new assignment of Global Admin, `platform-write` and `platform-admin` to the platform alert list (GitHub secret `PLATFORM_ALERT_EMAILS`, kept out of the public repos). Log-based alerts (break-glass sign-ins, role changes not made by the apply identity, PIM/CA policy changes) come with Phase 5 | msg 2026-11-09 |
 
 ## 4. Sign-off and bootstrap
@@ -260,6 +260,8 @@ Each grant is a set of independent bits on one todo for one email, just like `rw
 - CA05: a fresh phishing-resistant sign-in for **every** PIM activation. An authentication context with sign-in frequency "every time", which the PIM policies of Global Admin, `platform-write` and `platform-admin` require. Without it, PIM accepts the MFA from an hours-old sign-in (D39);
 - CA06: Azure portal, CLI and ARM for infra developers: sign in again every 4 h, no persistent browser session (D39);
 - CA07: every other app for infra and app developers: sign in again every 12 h (D39).
+- CA08: infra developers never stay signed in, on all apps (Entra only allows that control on policies for all apps, so it can't be part of CA06) (D39);
+- CA09: guests and external users (such as the owner Microsoft account) sign in again every 12 h (D39).
 
 **Alerts** (D40): PIM emails every activation and every new eligible or active assignment of a privileged role to the platform alert list. Until Phase 5 that is the only alert; Phase 5 adds the log-based ones.
 

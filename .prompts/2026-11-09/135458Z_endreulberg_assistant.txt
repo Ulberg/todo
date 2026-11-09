@@ -1,0 +1,20 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:54:58Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Ready. Before PR #11 switches the policies on, check the report-only results. It takes a few minutes:
+
+1. **Sign in once with each account** in a private browser window, so the sign-ins are fresh:
+   - the admin account: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com
+   - your owner account, opening billing: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_GTM/ModernBillingMenuBlade/~/Overview
+2. **Open the sign-in logs:** https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/SignIns
+
+   Click each of those two sign-ins, then the **Report-only** tab. Logs can take 5–10 minutes to show up.
+3. **What to look for:** each CA policy shows a result:
+   - **Success / Not applied:** fine.
+   - **"Report-only: Failure"** means it would have blocked that sign-in. Tell me which policy and which account.
+
+   The one I expect might fail is **CA03** for the owner account (phishing-resistant MFA for the Azure portal). If it does, we exclude guest accounts from CA03 before switching on, because the owner only needs billing.
+
+PR #11 is ready: https://github.com/Ulberg/platform/pull/11. Once you report the results are clean, I'll merge it and you approve the apply. From then on, every PIM activation asks for your passkey.

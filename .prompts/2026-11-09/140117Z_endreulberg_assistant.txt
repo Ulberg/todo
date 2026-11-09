@@ -1,0 +1,45 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:01:17Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+The design says yes; the build so far doesn't fully deliver it yet. There's also one real gap.
+
+**What PLAN.md already commits to** (§5.1, plus Phases 5 and 8):
+
+| | Infra developer's Claude | App developer's Claude | When |
+|---|---|---|---|
+| **A) Observability** | Grafana with all data sources (infra and app logs, metrics, traces) via `mcp-grafana` | Only the app's logs, metrics and traces (separate Loki/Tempo tenants) | Phase 5 |
+| **B) Using the app** | MCP, as a normal user with that user's permissions | same | Phase 8 |
+| **C) Infrastructure** | Azure Reader, read-only `kubectl`, read-only DB role. Writes code and opens PRs, never applies | nothing | Phase 3 for AKS and DB; Azure Reader exists today |
+
+**The gap: Claude uses *your* identity.** PLAN says Claude uses "the developer's own Entra login". That means:
+- When you activate `platform-admin` or Global Admin, **Claude gets the same rights** for that hour, including in this session.
+- "Claude is read-only" today depends on the human not escalating, not on Entra.
+- Your audit logs can't tell your actions from Claude's.
+
+**What I'd propose instead (needs your decision):** a dedicated **agent account per developer**, for example `endre-agent@…`, defined in `people.yaml`:
+- It's a member of a new `platform-agents` group that has **only read roles** and is **never PIM-eligible**. The standing-access check would also fail if it ever got anything else.
+- Claude uses it through a separate `az`/`kubectl` profile (`AZURE_CONFIG_DIR`). You sign it in yourself with its own passkey; there are no secrets on disk.
+- Conditional Access applies to it the same way. CA06/CA07 mean you re-sign it in every 4 h for Azure tools and every 12 h otherwise.
+- Audit logs show exactly what the agent did.
+- Cost: one more Entra licence per developer, about USD 9/month.
+
+The two alternatives are weaker:
+- **A service principal with a certificate** puts a secret on your laptop.
+- **Entra's new "Agent ID" identities** are still in preview.
+
+**"All the insights a platform developer has" also needs more than Azure Reader:**
+
+| Role | What it reads |
+|---|---|
+| Log Analytics Reader, Monitoring Reader | logs and metrics in Azure Monitor |
+| AKS RBAC Reader | Kubernetes resources (Phase 3) |
+| Entra Reports Reader | sign-in and audit logs |
+| Cost Management Reader | costs |
+
+Pulumi state and secrets stay **out**. The agent never decrypts anything.
+
+If you agree, I'll add this to PLAN.md as a decision. It would become the first part of Phase 1 or the end of Phase 0, before Claude needs Azure access for real work. Which do you prefer?
+
+This doesn't block turning on Conditional Access. PR #11 is still waiting for your report-only check.

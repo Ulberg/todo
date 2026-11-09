@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:09:25Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+In the admin I was asked if I wanted to stay logged in? should that option appear at all, or does the 12 hour enforcement work regardless? It aws the case for admin and owner on fresh login. Report Only is not accessible for Admin nor Owner

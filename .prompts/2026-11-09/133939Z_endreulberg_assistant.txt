@@ -1,0 +1,20 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:39:39Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PR #8 is merged, and PLAN.md marks step 2 as done. I tried to confirm that its apply changes nothing, but GitHub won't give me the job log while the run is still waiting.
+
+**One thing for you: approve the apply** at https://github.com/Ulberg/platform/actions/runs/42627450280. PR #8 changed only the workflow, a script and docs, not the stack, so the apply should change nothing. You can check the preview summary on that page before approving: it should say `0 to create/update`, and the "Standing access check" step should be green. Approving keeps the queue clear; a waiting run holds the `pulumi-access` lane.
+
+**The basic setup is in place:**
+- Nobody holds Global Admin or subscription Owner day to day, except the two offline break-glass accounts.
+- **Global Admin through PIM:** at most 1 hour, MFA plus a justification. Tested.
+- **Every escalation and new assignment** emails you. Tested.
+- **A check fails** on every PR, on `main` and nightly if standing privileged access reappears.
+
+**One Phase 0 step remains: Conditional Access on.**
+- It turns on MFA and phishing-resistant rules, plus short sessions: 12 h for developers, 4 h for Azure admin tools, and a passkey on every activation.
+- It starts with you turning off security defaults, then an apply in report-only mode, then one in enforced mode the same day.
+
+Tell me when you want to start, and I'll give you a direct link for each step.

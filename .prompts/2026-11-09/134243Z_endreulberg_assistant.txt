@@ -1,0 +1,27 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T13:42:43Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+PR #9 is ready: https://github.com/Ulberg/platform/pull/9. All checks pass, and the preview matches:
+- 6 Conditional Access policies (CA01–04, 06, 07), all report-only;
+- the CA05 Graph step;
+- 1 replace of the Global Admin PIM rules.
+
+**What it does:** turns Conditional Access on in report-only mode, including the short sessions. PIM switches to "fresh passkey on every activation" only in the follow-up PR that turns Conditional Access fully on, so your activations work as before until then.
+
+**The rollout, in this order:**
+1. **Say "merge"**, and I'll merge it. The apply then waits for you.
+2. **Activate Global Admin.** You need it for the next step, and you no longer hold it standing:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+3. **Turn off security defaults.** Open this page, click **Manage security defaults** at the bottom, and choose **Disabled**:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties
+   If Entra asks why, choose "My organization is planning to use Conditional Access".
+4. **Approve the apply right away**, so the time without enforced MFA is only minutes. I'll post the link.
+5. **Check the report-only results.** Sign in once as the admin and once as your owner account (open billing). Then open each sign-in here and look at its **Report-only** tab:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/SignIns
+
+   Watch the owner account in particular. CA03 asks for phishing-resistant MFA for the Azure portal, and I'm not sure a Microsoft account guest can meet that here. Report-only will show it before anything is enforced.
+6. **Then the "on" PR**, the same day.
+
+Shall I merge?

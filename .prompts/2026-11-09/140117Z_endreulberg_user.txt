@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:01:17Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+Just to make sure, we are making Claude a first-class citizen for A) Application insights/observability, B) using the application C) Infrastrucutre? Basically have we made sure to make it so that we can give Claude access to azure in a safe way where it can have read-only to all the insights a platform developer would.

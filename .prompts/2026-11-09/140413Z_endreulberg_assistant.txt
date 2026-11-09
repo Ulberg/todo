@@ -1,0 +1,24 @@
+author: endreulberg
+role: assistant
+timestamp: 2026-11-09T14:04:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+That order works. The report-only policies are already live and evaluate every sign-in, whether security defaults are on or off. The only thing that must happen before PR #11 is turning security defaults off: Entra won't enforce Conditional Access while they're on.
+
+Your steps with links:
+
+1. **Activate Global Admin.** You need it for step 2:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_PIMCommon/ActivationMenuBlade/~/aadmigratedroles
+2. **Turn off security defaults:** **Manage security defaults** at the bottom → **Disabled**. If Entra asks why, pick "My organization is planning to use Conditional Access":
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Properties
+3. **Fresh sign-ins**, each in a private window:
+   - Admin account: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com
+   - Owner account, billing: https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_Azure_GTM/ModernBillingMenuBlade/~/Overview
+4. **Check the report-only results.** Wait 5–10 minutes, click each sign-in, then open the **Report-only** tab:
+   https://portal.azure.com/#@adminazurestubble162simplel.onmicrosoft.com/view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/SignIns
+
+Tell me what the Report-only tab shows for each sign-in, especially any "Failure". Then I'll merge #11, or first fix whatever would block, such as CA03 for the owner account.
+
+Between step 2 and the merge of #11, sign-ins aren't forced to use MFA, so it's best to keep that gap short.
+
+When you're ready, also answer the agent-identity question from my last message (end of Phase 0, or start of Phase 1).

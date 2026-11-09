@@ -1,0 +1,6 @@
+author: endreulberg
+role: user
+timestamp: 2026-11-09T14:04:13Z
+session: 65ce0d37-90f3-444e-87a8-31d5665c9866
+
+I will first do the Security defaults and then I'll do fresh signs ins and the other things you mentioned
